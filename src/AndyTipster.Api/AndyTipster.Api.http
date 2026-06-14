@@ -1,0 +1,16 @@
+@host = https://localhost:5001
+
+### Get API Status (Minimal API endpoint)
+GET {{host}}/api/status
+
+### Get Weather Forecast (Controller endpoint)
+GET {{host}}/api/weatherforecast
+
+### Health Check - All
+GET {{host}}/health
+
+### Health Check - Ready (database, storage, external APIs)
+GET {{host}}/health/ready
+
+### Health Check - Live (just app is running)
+GET {{host}}/health/live
