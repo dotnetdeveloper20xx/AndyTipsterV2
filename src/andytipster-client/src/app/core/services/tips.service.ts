@@ -1,7 +1,8 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, of, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { CacheService } from './cache.service';
 
 export interface PaginatedResponse<T> {
   items: T[];
@@ -111,9 +112,15 @@ export interface AccessCheckResult {
   showPaywall: boolean;
 }
 
+const CATEGORIES_CACHE_KEY = 'tips:categories';
+const CATEGORIES_CACHE_TTL = 10 * 60 * 1000; // 10 minutes
+const TIP_OF_DAY_CACHE_KEY = 'tips:tip-of-the-day';
+const TIP_OF_DAY_CACHE_TTL = 30 * 60 * 1000; // 30 minutes
+
 @Injectable({ providedIn: 'root' })
 export class TipsService {
   private readonly http = inject(HttpClient);
+  private readonly cache = inject(CacheService);
   private readonly apiUrl = `${environment.apiUrl}/api/tips`;
   private readonly categoriesUrl = `${environment.apiUrl}/api/categories`;
 
@@ -143,7 +150,12 @@ export class TipsService {
   }
 
   getTipOfTheDay(): Observable<TipDto> {
-    return this.http.get<TipDto>(`${this.apiUrl}/tip-of-the-day`);
+    const cached = this.cache.get<TipDto>(TIP_OF_DAY_CACHE_KEY);
+    if (cached) return of(cached);
+
+    return this.http.get<TipDto>(`${this.apiUrl}/tip-of-the-day`).pipe(
+      tap((tip) => this.cache.set(TIP_OF_DAY_CACHE_KEY, tip, TIP_OF_DAY_CACHE_TTL)),
+    );
   }
 
   getTip(tipId: string): Observable<TipDto> {
@@ -200,9 +212,15 @@ export class TipsService {
   // === Categories ===
 
   getCategories(includeInactive = false): Observable<CategoryDto[]> {
+    const cacheKey = includeInactive ? `${CATEGORIES_CACHE_KEY}:all` : CATEGORIES_CACHE_KEY;
+    const cached = this.cache.get<CategoryDto[]>(cacheKey);
+    if (cached) return of(cached);
+
     let params = new HttpParams();
     if (includeInactive) params = params.set('includeInactive', 'true');
-    return this.http.get<CategoryDto[]>(this.categoriesUrl, { params });
+    return this.http.get<CategoryDto[]>(this.categoriesUrl, { params }).pipe(
+      tap((categories) => this.cache.set(cacheKey, categories, CATEGORIES_CACHE_TTL)),
+    );
   }
 
   getCategory(categoryId: string): Observable<CategoryDto> {

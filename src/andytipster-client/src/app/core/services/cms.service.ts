@@ -1,7 +1,8 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, of, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { CacheService } from './cache.service';
 
 export interface BlockDto {
   id: string;
@@ -134,9 +135,14 @@ export interface PageSeoDto {
   structuredDataJson?: string;
 }
 
+const CMS_PAGE_CACHE_TTL = 10 * 60 * 1000; // 10 minutes
+const SITE_SETTINGS_CACHE_KEY = 'cms:site-settings';
+const SITE_SETTINGS_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
 @Injectable({ providedIn: 'root' })
 export class CmsService {
   private readonly http = inject(HttpClient);
+  private readonly cache = inject(CacheService);
   private readonly pagesUrl = `${environment.apiUrl}/api/cms/pages`;
   private readonly navigationUrl = `${environment.apiUrl}/api/navigation`;
   private readonly seoUrl = `${environment.apiUrl}/api/seo`;
@@ -154,7 +160,13 @@ export class CmsService {
   }
 
   getPageBySlug(slug: string): Observable<PageDto> {
-    return this.http.get<PageDto>(`${this.pagesUrl}/by-slug/${slug}`);
+    const cacheKey = `cms:page:${slug}`;
+    const cached = this.cache.get<PageDto>(cacheKey);
+    if (cached) return of(cached);
+
+    return this.http.get<PageDto>(`${this.pagesUrl}/by-slug/${slug}`).pipe(
+      tap((page) => this.cache.set(cacheKey, page, CMS_PAGE_CACHE_TTL)),
+    );
   }
 
   createPage(request: CreatePageRequest): Observable<PageDto> {
@@ -225,11 +237,18 @@ export class CmsService {
 
   // Site Settings
   getSiteSettings(): Observable<SiteSettingsDto> {
-    return this.http.get<SiteSettingsDto>(this.settingsUrl);
+    const cached = this.cache.get<SiteSettingsDto>(SITE_SETTINGS_CACHE_KEY);
+    if (cached) return of(cached);
+
+    return this.http.get<SiteSettingsDto>(this.settingsUrl).pipe(
+      tap((settings) => this.cache.set(SITE_SETTINGS_CACHE_KEY, settings, SITE_SETTINGS_CACHE_TTL)),
+    );
   }
 
   updateSiteSettings(request: any): Observable<SiteSettingsDto> {
-    return this.http.patch<SiteSettingsDto>(this.settingsUrl, request);
+    return this.http.patch<SiteSettingsDto>(this.settingsUrl, request).pipe(
+      tap(() => this.cache.invalidate(SITE_SETTINGS_CACHE_KEY)),
+    );
   }
 
   getRedirects(): Observable<RedirectDto[]> {
