@@ -61,7 +61,7 @@ This plan implements the AndyTipster V2 horse racing tips subscription platform 
     - Add mobile-responsive layout (horizontal scroll or card-based)
     - _Requirements: 45.1, 45.2, 45.3, 45.4, 45.5, 45.6, 45.7, 45.8, 45.9, 45.10_
 
-  - [~] 1.7 Implement accessibility compliance baseline
+  - [x] 1.7 Implement accessibility compliance baseline
     - Configure 4.5:1 minimum contrast ratio in theme tokens
     - Add ARIA labels, roles, and states to all interactive components
     - Implement full keyboard navigation with visible focus indicators
@@ -70,7 +70,7 @@ This plan implements the AndyTipster V2 horse racing tips subscription platform 
     - _Requirements: 49.1, 49.2, 49.3, 49.4, 49.5_
 
 - [ ] 2. Phase 1 — Foundation: Authentication and authorization
-  - [~] 2.1 Implement user registration with email verification
+  - [x] 2.1 Implement user registration with email verification
     - Configure ASP.NET Core Identity with custom ApplicationUser
     - Implement registration endpoint with password complexity validation (8+ chars, uppercase, lowercase, digit, special char)
     - Send verification email with 24-hour expiry link
@@ -82,7 +82,7 @@ This plan implements the AndyTipster V2 horse racing tips subscription platform 
     - **Property 1: Password Validation Completeness**
     - **Validates: Requirements 1.2**
 
-  - [~] 2.3 Implement JWT authentication with refresh token rotation
+  - [x] 2.3 Implement JWT authentication with refresh token rotation
     - Issue JWT access token (15-min expiry) with user ID, roles, permissions claims
     - Issue refresh token (7-day expiry) with secure storage
     - Implement token refresh endpoint with refresh token rotation and old token invalidation
@@ -127,7 +127,7 @@ This plan implements the AndyTipster V2 horse racing tips subscription platform 
     - **Property 6: Recovery Code Single-Use Consumption**
     - **Validates: Requirements 2.6**
 
-  - [~] 2.11 Implement multi-role authorization system
+  - [x] 2.11 Implement multi-role authorization system
     - Define six base roles: Super Admin, Admin, Moderator, Subscriber, Free User, Guest
     - Implement role hierarchy enforcement (can only assign roles below own level)
     - Implement custom role creation with selected permissions

@@ -51,6 +51,10 @@ try
     builder.Services.AddApplicationServices();
     builder.Services.AddInfrastructureServices(builder.Configuration);
 
+    // ─── Authentication & Authorization ─────────────────────────────────────────
+    // JWT Bearer auth is configured in Infrastructure DependencyInjection
+    // Authorization policies (permission-based) are also registered in Infrastructure DependencyInjection
+
     // ─── Controllers (for complex domain operations) ────────────────────────────
     builder.Services.AddControllers();
 
@@ -231,9 +235,9 @@ try
     // Routing
     app.UseRouting();
 
-    // Auth (placeholder - will be configured in auth task)
-    // app.UseAuthentication();
-    // app.UseAuthorization();
+    // Auth
+    app.UseAuthentication();
+    app.UseAuthorization();
 
     // ─── Endpoint Mapping ───────────────────────────────────────────────────────
 

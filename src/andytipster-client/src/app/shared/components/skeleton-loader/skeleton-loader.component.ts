@@ -16,7 +16,7 @@ export type SkeletonShape = 'text' | 'avatar' | 'card';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (hasTimedOut()) {
-      <div class="flex flex-col items-center justify-center gap-4 p-8 text-center">
+      <div class="flex flex-col items-center justify-center gap-4 p-8 text-center" role="alert" aria-live="assertive">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           class="h-12 w-12 text-error"

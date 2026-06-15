@@ -7,7 +7,7 @@ import { RouterLink } from '@angular/router';
   imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="flex flex-col items-center justify-center gap-6 p-12 text-center">
+    <div class="flex flex-col items-center justify-center gap-6 p-12 text-center" role="status" aria-live="polite">
       <!-- Inline SVG illustration -->
       <svg
         xmlns="http://www.w3.org/2000/svg"
