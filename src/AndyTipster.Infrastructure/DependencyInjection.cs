@@ -1,4 +1,10 @@
 using AndyTipster.Application.Blog.Services;
+using AndyTipster.Application.Community.Services;
+using AndyTipster.Application.HelpBot.Services;
+using AndyTipster.Application.Notifications.Services;
+using AndyTipster.Application.Referral.Services;
+using AndyTipster.Application.Social.Services;
+using AndyTipster.Application.Telegram.Services;
 using AndyTipster.Application.Tips.Services;
 using System.Text;
 using AndyTipster.Application.Audit.Services;
@@ -185,6 +191,17 @@ public static class DependencyInjection
 
         // Register Blog services
         services.AddScoped<IBlogService, BlogService>();
+
+        // Register Phase 5 services: Social, Notifications, Community, Referral, HelpBot, Telegram
+        services.AddScoped<ISocialComponentService, SocialComponentService>();
+        services.AddScoped<INotificationService, NotificationService>();
+        services.AddScoped<INotificationPreferencesService, NotificationPreferencesService>();
+        services.AddScoped<ICommentService, CommentService>();
+        services.AddScoped<IPollService, PollService>();
+        services.AddScoped<IMessagingService, MessagingService>();
+        services.AddScoped<IReferralService, ReferralService>();
+        services.AddScoped<ITelegramService, TelegramService>();
+        services.AddScoped<IHelpBotService, HelpBotService>();
 
         // Register HttpClientFactory for social auth provider calls
         services.AddHttpClient("SocialAuth", client =>

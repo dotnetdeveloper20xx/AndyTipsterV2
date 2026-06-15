@@ -12,3 +12,6 @@ export * from './subscription.service';
 export * from './cms.service';
 export * from './media.service';
 export * from './blog.service';
+export * from './notifications.service';
+export * from './community.service';
+export * from './referral.service';

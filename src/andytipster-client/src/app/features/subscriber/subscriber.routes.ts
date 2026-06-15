@@ -31,6 +31,10 @@ export const SUBSCRIBER_ROUTES: Routes = [
         path: 'profile',
         loadComponent: () => import('./pages/profile/profile.component').then(m => m.ProfileComponent),
       },
+      {
+        path: 'referrals',
+        loadComponent: () => import('./pages/referral/referral-dashboard.component').then(m => m.ReferralDashboardComponent),
+      },
     ],
   },
 ];
