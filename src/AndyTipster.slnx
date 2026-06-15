@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="AndyTipster.Api/AndyTipster.Api.csproj" />
+  <Project Path="AndyTipster.Application/AndyTipster.Application.csproj" />
+  <Project Path="AndyTipster.Domain/AndyTipster.Domain.csproj" />
+  <Project Path="AndyTipster.Infrastructure/AndyTipster.Infrastructure.csproj" />
+</Solution>

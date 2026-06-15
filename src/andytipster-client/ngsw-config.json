@@ -1,0 +1,81 @@
+{
+  "index": "/index.html",
+  "assetGroups": [
+    {
+      "name": "app-shell",
+      "installMode": "prefetch",
+      "resources": {
+        "files": [
+          "/favicon.ico",
+          "/index.html",
+          "/manifest.webmanifest",
+          "/*.css",
+          "/*.js"
+        ]
+      }
+    },
+    {
+      "name": "assets",
+      "installMode": "lazy",
+      "updateMode": "prefetch",
+      "resources": {
+        "files": [
+          "/assets/**",
+          "/icons/**",
+          "/*.(svg|cur|jpg|jpeg|png|apng|webp|avif|gif|otf|ttf|woff|woff2)"
+        ]
+      }
+    }
+  ],
+  "dataGroups": [
+    {
+      "name": "tips-feed",
+      "urls": [
+        "/api/tips/feed",
+        "/api/tips/tip-of-the-day"
+      ],
+      "cacheConfig": {
+        "maxSize": 100,
+        "maxAge": "1h",
+        "timeout": "5s",
+        "strategy": "freshness"
+      }
+    },
+    {
+      "name": "plans",
+      "urls": [
+        "/api/plans"
+      ],
+      "cacheConfig": {
+        "maxSize": 20,
+        "maxAge": "6h",
+        "timeout": "5s",
+        "strategy": "performance"
+      }
+    },
+    {
+      "name": "cms-pages",
+      "urls": [
+        "/api/cms/pages/by-slug/**"
+      ],
+      "cacheConfig": {
+        "maxSize": 50,
+        "maxAge": "12h",
+        "timeout": "5s",
+        "strategy": "freshness"
+      }
+    },
+    {
+      "name": "categories",
+      "urls": [
+        "/api/categories"
+      ],
+      "cacheConfig": {
+        "maxSize": 10,
+        "maxAge": "12h",
+        "timeout": "3s",
+        "strategy": "performance"
+      }
+    }
+  ]
+}

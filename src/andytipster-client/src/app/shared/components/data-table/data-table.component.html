@@ -1,0 +1,309 @@
+<!-- Error State -->
+@if (error()) {
+  <div class="flex flex-col items-center justify-center gap-4 p-12 text-center" role="alert" aria-live="assertive">
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      class="h-16 w-16 text-error"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      aria-hidden="true"
+    >
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.999L13.732 4.001c-.77-1.333-2.694-1.333-3.464 0L3.34 16.001C2.57 17.335 3.532 19 5.072 19z"
+      />
+    </svg>
+    <p class="text-base-content/70 text-sm">{{ error() }}</p>
+    <button class="btn btn-primary btn-sm" (click)="onRetry()">
+      Retry
+    </button>
+  </div>
+} @else {
+  <div class="flex flex-col gap-4">
+    <!-- Toolbar: Search + Actions -->
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <!-- Search -->
+      <div class="relative flex-1 max-w-sm">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-base-content/40"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          aria-hidden="true"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+          />
+        </svg>
+        <input
+          type="text"
+          class="input input-bordered input-sm w-full pl-9"
+          placeholder="Search..."
+          [value]="searchText()"
+          (input)="onSearchInput($event)"
+          aria-label="Search table"
+        />
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex items-center gap-2">
+        <!-- Filter toggle -->
+        <button
+          class="btn btn-ghost btn-sm gap-1"
+          [class.btn-active]="showFilters()"
+          (click)="toggleFilters()"
+          aria-label="Toggle filters"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+          </svg>
+          Filters
+          @if (hasActiveFilters()) {
+            <span class="badge badge-primary badge-xs">{{ filterStates().length }}</span>
+          }
+        </button>
+
+        <!-- Export dropdown -->
+        @if (exportable()) {
+          <div class="dropdown dropdown-end">
+            <div tabindex="0" role="button" class="btn btn-ghost btn-sm gap-1" aria-label="Export options">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Export
+            </div>
+            <ul tabindex="0" class="dropdown-content menu bg-base-200 rounded-box z-10 w-52 p-2 shadow-lg">
+              <li><button (click)="onExport('csv', 'filtered')">CSV (All Rows)</button></li>
+              <li><button (click)="onExport('excel', 'filtered')">Excel (All Rows)</button></li>
+              @if (selectedRows().size > 0) {
+                <li><button (click)="onExport('csv', 'selected')">CSV (Selected)</button></li>
+                <li><button (click)="onExport('excel', 'selected')">Excel (Selected)</button></li>
+              }
+            </ul>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Bulk Action Bar -->
+    @if (selectedRows().size > 0) {
+      <div class="flex items-center gap-3 rounded-lg bg-primary/10 px-4 py-2" role="toolbar" aria-label="Bulk actions for selected rows" aria-live="polite">
+        <span class="text-sm font-medium">
+          {{ selectedRows().size }} row{{ selectedRows().size > 1 ? 's' : '' }} selected
+        </span>
+        <div class="flex items-center gap-2">
+          @for (action of bulkActions(); track action.id) {
+            <button
+              class="btn btn-sm"
+              [class.btn-primary]="action.variant === 'primary'"
+              [class.btn-secondary]="action.variant === 'secondary'"
+              [class.btn-error]="action.variant === 'error'"
+              [class.btn-warning]="action.variant === 'warning'"
+              (click)="onBulkAction(action)"
+            >
+              {{ action.label }}
+            </button>
+          }
+        </div>
+        <button class="btn btn-ghost btn-xs ml-auto" (click)="clearSelection()">
+          Clear selection
+        </button>
+      </div>
+    }
+
+    <!-- Loading State -->
+    @if (loading()) {
+      <div class="overflow-x-auto">
+        <app-skeleton-loader [count]="currentPageSize()" shape="text" />
+      </div>
+    } @else if (data().length === 0 && !error()) {
+      <!-- Empty State -->
+      <app-empty-state
+        [title]="emptyStateConfig().title ?? 'No data found'"
+        [message]="emptyStateConfig().message ?? 'There are no records to display.'"
+        [ctaText]="emptyStateConfig().ctaText ?? ''"
+        [ctaRoute]="emptyStateConfig().ctaRoute ?? ''"
+      />
+    } @else {
+      <!-- Table -->
+      <div class="relative overflow-x-auto rounded-lg border border-base-300">
+        <!-- Left shadow indicator for mobile scroll -->
+        <div class="pointer-events-none absolute inset-y-0 left-0 w-4 bg-gradient-to-r from-base-100 to-transparent opacity-0 transition-opacity md:hidden" aria-hidden="true"></div>
+        <!-- Right shadow indicator for mobile scroll -->
+        <div class="pointer-events-none absolute inset-y-0 right-0 w-4 bg-gradient-to-l from-base-100 to-transparent opacity-0 transition-opacity md:hidden" aria-hidden="true"></div>
+
+        <table class="table table-sm w-full" role="grid" aria-label="Data table">
+          <thead>
+            <tr>
+              <!-- Select All Checkbox -->
+              @if (selectable()) {
+                <th class="w-12">
+                  <label class="cursor-pointer" aria-label="Select all rows">
+                    <input
+                      type="checkbox"
+                      class="checkbox checkbox-sm"
+                      [checked]="allSelected()"
+                      [indeterminate]="someSelected()"
+                      (change)="toggleSelectAll()"
+                    />
+                  </label>
+                </th>
+              }
+              <!-- Column Headers -->
+              @for (col of columns(); track col.field) {
+                <th
+                  [style.width]="col.width ?? 'auto'"
+                  [class.cursor-pointer]="col.sortable"
+                  [class.select-none]="col.sortable"
+                  (click)="toggleSort(col)"
+                  [attr.aria-sort]="getSortDirection(col.field) === 'asc' ? 'ascending' : getSortDirection(col.field) === 'desc' ? 'descending' : 'none'"
+                >
+                  <div class="flex items-center gap-1">
+                    <span>{{ col.header }}</span>
+                    @if (col.sortable) {
+                      <span class="inline-flex flex-col text-base-content/30" aria-hidden="true">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" [class.text-primary]="getSortDirection(col.field) === 'asc'" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd" />
+                        </svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 -mt-1" [class.text-primary]="getSortDirection(col.field) === 'desc'" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        </svg>
+                      </span>
+                    }
+                  </div>
+                </th>
+              }
+            </tr>
+
+            <!-- Filter Row -->
+            @if (showFilters()) {
+              <tr class="bg-base-200/50">
+                @if (selectable()) {
+                  <th></th>
+                }
+                @for (col of columns(); track col.field) {
+                  <th class="p-1">
+                    @if (col.filterable) {
+                      @switch (col.filterType) {
+                        @case ('dropdown') {
+                          <select
+                            class="select select-bordered select-xs w-full"
+                            [value]="getFilterValue(col.field)"
+                            (change)="onFilterChange(col, $any($event.target).value)"
+                            [attr.aria-label]="'Filter by ' + col.header"
+                          >
+                            <option value="">All</option>
+                            @for (opt of col.filterOptions; track opt.value) {
+                              <option [value]="opt.value">{{ opt.label }}</option>
+                            }
+                          </select>
+                        }
+                        @case ('date-range') {
+                          <input
+                            type="date"
+                            class="input input-bordered input-xs w-full"
+                            [value]="getFilterValue(col.field)"
+                            (change)="onFilterChange(col, $any($event.target).value)"
+                            [attr.aria-label]="'Filter by ' + col.header + ' date'"
+                          />
+                        }
+                        @default {
+                          <input
+                            type="text"
+                            class="input input-bordered input-xs w-full"
+                            placeholder="Filter..."
+                            [value]="getFilterValue(col.field)"
+                            (input)="onFilterChange(col, $any($event.target).value)"
+                            [attr.aria-label]="'Filter by ' + col.header"
+                          />
+                        }
+                      }
+                    }
+                  </th>
+                }
+              </tr>
+            }
+          </thead>
+
+          <tbody>
+            @for (row of data(); track trackByIndex($index)) {
+              <tr
+                class="hover:bg-base-200/50 transition-colors"
+                [class.bg-primary/5]="isRowSelected($index)"
+              >
+                @if (selectable()) {
+                  <td>
+                    <label class="cursor-pointer" [attr.aria-label]="'Select row ' + ($index + 1)">
+                      <input
+                        type="checkbox"
+                        class="checkbox checkbox-sm"
+                        [checked]="isRowSelected($index)"
+                        (change)="toggleRowSelection($index)"
+                      />
+                    </label>
+                  </td>
+                }
+                @for (col of columns(); track col.field) {
+                  <td [style.width]="col.width ?? 'auto'">
+                    {{ getCellValue(row, col) }}
+                  </td>
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <!-- Page size selector + info -->
+        <div class="flex items-center gap-3 text-sm text-base-content/70">
+          <span>Rows per page:</span>
+          <select
+            class="select select-bordered select-xs"
+            [value]="currentPageSize()"
+            (change)="onPageSizeChange($event)"
+            aria-label="Rows per page"
+          >
+            @for (size of pageSizeOptions; track size) {
+              <option [value]="size">{{ size }}</option>
+            }
+          </select>
+          <span>
+            {{ paginationRange().start }}–{{ paginationRange().end }} of {{ paginationRange().total }}
+          </span>
+        </div>
+
+        <!-- Page navigation -->
+        <div class="join">
+          <button
+            class="join-item btn btn-sm"
+            [disabled]="currentPage() <= 1"
+            (click)="goToPage(currentPage() - 1)"
+            aria-label="Previous page"
+          >
+            «
+          </button>
+          <button class="join-item btn btn-sm" aria-current="page">
+            Page {{ currentPage() }} of {{ totalPages() }}
+          </button>
+          <button
+            class="join-item btn btn-sm"
+            [disabled]="currentPage() >= totalPages()"
+            (click)="goToPage(currentPage() + 1)"
+            aria-label="Next page"
+          >
+            »
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+}
