@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { roleGuard } from '../../core/guards/role.guard';
 import { permissionGuard } from '../../core/guards/permission.guard';
+import { unsavedChangesGuard } from '../../core/guards/unsaved-changes.guard';
 
 export const ADMIN_ROUTES: Routes = [
   {
@@ -36,6 +37,7 @@ export const ADMIN_ROUTES: Routes = [
       {
         path: 'cms',
         loadComponent: () => import('./pages/cms/cms.component').then(m => m.CmsComponent),
+        canDeactivate: [unsavedChangesGuard],
       },
       {
         path: 'media-library',

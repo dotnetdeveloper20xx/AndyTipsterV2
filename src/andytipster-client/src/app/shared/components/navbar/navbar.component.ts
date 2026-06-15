@@ -17,6 +17,7 @@ export interface NavItem {
   permissions?: string[];
   authRequired?: boolean;
   guestOnly?: boolean;
+  hideForRoles?: string[];
 }
 
 @Component({
@@ -101,11 +102,11 @@ export class NavbarComponent {
 
   private readonly navItems: NavItem[] = [
     { label: 'Home', route: '/', authRequired: false },
-    { label: 'Pricing', route: '/pricing', authRequired: false, guestOnly: true },
-    { label: 'My Tips', route: '/subscriber/tips', authRequired: true },
-    { label: 'Results', route: '/subscriber/results', authRequired: true },
+    { label: 'Pricing', route: '/pricing', authRequired: false, guestOnly: false, hideForRoles: ['Subscriber', 'Admin', 'Super Admin', 'Moderator'] },
+    { label: 'My Tips', route: '/subscriber/tips', authRequired: true, roles: ['Subscriber', 'Admin', 'Super Admin', 'Moderator'] },
+    { label: 'Results', route: '/subscriber/results', authRequired: true, roles: ['Subscriber', 'Admin', 'Super Admin', 'Moderator'] },
     { label: 'Billing', route: '/subscriber/billing', authRequired: true },
-    { label: 'Admin', route: '/admin', roles: ['Admin', 'Super Admin'], authRequired: true },
+    { label: 'Admin', route: '/admin', roles: ['Admin', 'Super Admin', 'Moderator'], authRequired: true },
   ];
 
   private roles: string[] = [];
@@ -147,11 +148,17 @@ export class NavbarComponent {
       // Guest-only items
       if (item.guestOnly && this.authenticated) return false;
 
+      // Hide for specific roles (e.g. hide Pricing for Subscribers/Admins)
+      if (item.hideForRoles && item.hideForRoles.length > 0 && this.authenticated) {
+        if (item.hideForRoles.some((role) => this.roles.includes(role))) return false;
+      }
+
       // Auth-required items
       if (item.authRequired && !this.authenticated) return false;
 
       // Role-restricted items
       if (item.roles && item.roles.length > 0) {
+        if (!this.authenticated) return false;
         if (!item.roles.some((role) => this.roles.includes(role))) return false;
       }
 

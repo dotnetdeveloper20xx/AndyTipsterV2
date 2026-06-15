@@ -22,11 +22,25 @@ public static class DemoSeeder
 
         var adminUser = await SeedUsersAsync(userManager, logger);
         await SeedPlansAsync(dbContext, logger);
+        await SeedPlanFeaturesAsync(dbContext, logger);
         var categories = await SeedTipCategoriesAsync(dbContext, logger);
         await SeedTipsAsync(dbContext, adminUser, categories, logger);
         await SeedBlogPostsAsync(dbContext, adminUser, logger);
         await SeedSiteSettingsAsync(dbContext, logger);
         await SeedNavigationMenuAsync(dbContext, logger);
+
+        var subscriberUser = await userManager.FindByEmailAsync("subscriber@test.com");
+        if (subscriberUser is not null)
+        {
+            await SeedSubscriptionAsync(dbContext, subscriberUser, logger);
+            await SeedPaymentsAsync(dbContext, subscriberUser, logger);
+            await SeedCommentsAsync(dbContext, subscriberUser, adminUser, logger);
+            await SeedReferralAsync(dbContext, subscriberUser, logger);
+        }
+
+        await SeedPromoCodesAsync(dbContext, logger);
+        await SeedCmsPagesAsync(dbContext, adminUser, logger);
+        await SeedNotificationsAsync(dbContext, adminUser, userManager, logger);
     }
 
     private static async Task<ApplicationUser> SeedUsersAsync(UserManager<ApplicationUser> userManager, ILogger logger)
@@ -454,5 +468,309 @@ public static class DemoSeeder
 
         await dbContext.SaveChangesAsync();
         logger.LogInformation("Navigation menu seeded successfully.");
+    }
+
+    private static async Task SeedPlanFeaturesAsync(AndyTipsterDbContext dbContext, ILogger logger)
+    {
+        if (await dbContext.PlanFeatures.AnyAsync()) return;
+
+        var plans = await dbContext.Plans.ToListAsync();
+        var monthlyPlan = plans.FirstOrDefault(p => p.Name == "Monthly Premium");
+        var quarterlyPlan = plans.FirstOrDefault(p => p.Name == "Quarterly Value");
+        var annualPlan = plans.FirstOrDefault(p => p.Name == "Annual Gold");
+
+        if (monthlyPlan is not null)
+        {
+            var features = new[] { "Daily UK Racing Tips", "Results & P&L Tracking", "Email Notifications", "Mobile Access" };
+            for (var i = 0; i < features.Length; i++)
+            {
+                dbContext.PlanFeatures.Add(new PlanFeature { Id = Guid.NewGuid(), PlanId = monthlyPlan.Id, Feature = features[i], SortOrder = i + 1 });
+            }
+        }
+
+        if (quarterlyPlan is not null)
+        {
+            var features = new[] { "Daily UK & Irish Racing Tips", "Results & P&L Tracking", "All Notification Channels", "Mobile Access", "Priority Support" };
+            for (var i = 0; i < features.Length; i++)
+            {
+                dbContext.PlanFeatures.Add(new PlanFeature { Id = Guid.NewGuid(), PlanId = quarterlyPlan.Id, Feature = features[i], SortOrder = i + 1 });
+            }
+        }
+
+        if (annualPlan is not null)
+        {
+            var features = new[] { "All Racing Tips (UK, Irish, Other Sports)", "Results & P&L Tracking", "All Notification Channels", "Mobile Access", "Priority Support", "Telegram Delivery", "7-Day Free Trial" };
+            for (var i = 0; i < features.Length; i++)
+            {
+                dbContext.PlanFeatures.Add(new PlanFeature { Id = Guid.NewGuid(), PlanId = annualPlan.Id, Feature = features[i], SortOrder = i + 1 });
+            }
+        }
+
+        await dbContext.SaveChangesAsync();
+        logger.LogInformation("Plan features seeded successfully.");
+    }
+
+    private static async Task SeedSubscriptionAsync(AndyTipsterDbContext dbContext, ApplicationUser subscriber, ILogger logger)
+    {
+        if (await dbContext.Subscriptions.AnyAsync(s => s.UserId == subscriber.Id)) return;
+
+        var monthlyPlan = await dbContext.Plans.FirstOrDefaultAsync(p => p.Name == "Monthly Premium");
+        if (monthlyPlan is null) return;
+
+        dbContext.Subscriptions.Add(new Subscription
+        {
+            Id = Guid.NewGuid(),
+            UserId = subscriber.Id,
+            PlanId = monthlyPlan.Id,
+            Status = SubscriptionStatus.Active,
+            Provider = PaymentProvider.PayPal,
+            ExternalSubscriptionId = "DEMO-SUB-001",
+            StartDate = DateTime.UtcNow.AddDays(-30),
+            CurrentPeriodEnd = DateTime.UtcNow.AddDays(30),
+            CreatedAt = DateTime.UtcNow.AddDays(-30),
+        });
+
+        await dbContext.SaveChangesAsync();
+        logger.LogInformation("Subscription seeded for subscriber.");
+    }
+
+    private static async Task SeedPaymentsAsync(AndyTipsterDbContext dbContext, ApplicationUser subscriber, ILogger logger)
+    {
+        if (await dbContext.Payments.AnyAsync()) return;
+
+        var subscription = await dbContext.Subscriptions.FirstOrDefaultAsync(s => s.UserId == subscriber.Id);
+        if (subscription is null) return;
+
+        var payments = new[]
+        {
+            new Payment
+            {
+                Id = Guid.NewGuid(),
+                SubscriptionId = subscription.Id,
+                Amount = 19.99m,
+                Fees = 0.89m,
+                Net = 19.10m,
+                Currency = Currency.GBP,
+                Provider = PaymentProvider.PayPal,
+                ExternalTransactionId = "DEMO-TXN-001",
+                Status = "Completed",
+                PaidAt = DateTime.UtcNow.AddDays(-30),
+                CreatedAt = DateTime.UtcNow.AddDays(-30),
+            },
+            new Payment
+            {
+                Id = Guid.NewGuid(),
+                SubscriptionId = subscription.Id,
+                Amount = 19.99m,
+                Fees = 0.89m,
+                Net = 19.10m,
+                Currency = Currency.GBP,
+                Provider = PaymentProvider.PayPal,
+                ExternalTransactionId = "DEMO-TXN-002",
+                Status = "Completed",
+                PaidAt = DateTime.UtcNow,
+                CreatedAt = DateTime.UtcNow,
+            },
+        };
+
+        dbContext.Payments.AddRange(payments);
+        await dbContext.SaveChangesAsync();
+        logger.LogInformation("Sample payments seeded successfully.");
+    }
+
+    private static async Task SeedPromoCodesAsync(AndyTipsterDbContext dbContext, ILogger logger)
+    {
+        if (await dbContext.PromoCodes.AnyAsync()) return;
+
+        var allPlans = await dbContext.Plans.ToListAsync();
+        var annualPlan = allPlans.FirstOrDefault(p => p.Name == "Annual Gold");
+
+        var welcome20 = new PromoCode
+        {
+            Id = Guid.NewGuid(),
+            Code = "WELCOME20",
+            DiscountType = "percentage",
+            DiscountValue = 20m,
+            MaxUses = 100,
+            CurrentUses = 0,
+            ExpiresAt = DateTime.UtcNow.AddDays(90),
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow,
+        };
+        // All plans are applicable
+        foreach (var plan in allPlans)
+        {
+            welcome20.ApplicablePlans.Add(plan);
+        }
+
+        var annual50 = new PromoCode
+        {
+            Id = Guid.NewGuid(),
+            Code = "ANNUAL50",
+            DiscountType = "fixed",
+            DiscountValue = 50m,
+            MaxUses = 50,
+            CurrentUses = 0,
+            ExpiresAt = DateTime.UtcNow.AddDays(60),
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow,
+        };
+        if (annualPlan is not null)
+        {
+            annual50.ApplicablePlans.Add(annualPlan);
+        }
+
+        dbContext.PromoCodes.AddRange(new[] { welcome20, annual50 });
+        await dbContext.SaveChangesAsync();
+        logger.LogInformation("Promo codes seeded successfully.");
+    }
+
+    private static async Task SeedCmsPagesAsync(AndyTipsterDbContext dbContext, ApplicationUser adminUser, ILogger logger)
+    {
+        if (await dbContext.CmsPages.AnyAsync(p => p.Slug == "home")) return;
+
+        var blocksJson = """
+        [
+          {
+            "type": "hero",
+            "heading": "Expert Horse Racing Tips",
+            "subheading": "Join thousands of profitable punters with our daily selections",
+            "ctaText": "View Plans",
+            "ctaLink": "/pricing",
+            "backgroundImage": null
+          },
+          {
+            "type": "cta",
+            "heading": "Ready to Start Winning?",
+            "body": "Subscribe today and get instant access to our premium tips backed by data and years of experience.",
+            "buttonText": "Get Started",
+            "buttonLink": "/auth/register"
+          }
+        ]
+        """;
+
+        dbContext.CmsPages.Add(new CmsPage
+        {
+            Id = Guid.NewGuid(),
+            Title = "Home",
+            Slug = "home",
+            Status = PageStatus.Published,
+            PublishedAt = DateTime.UtcNow,
+            BlocksJson = blocksJson,
+            CurrentVersion = 1,
+            CreatedAt = DateTime.UtcNow,
+            CreatedByUserId = adminUser.Id,
+        });
+
+        await dbContext.SaveChangesAsync();
+        logger.LogInformation("CMS pages seeded successfully.");
+    }
+
+    private static async Task SeedCommentsAsync(AndyTipsterDbContext dbContext, ApplicationUser subscriber, ApplicationUser adminUser, ILogger logger)
+    {
+        if (await dbContext.Comments.AnyAsync()) return;
+
+        // Find the most recent published tip
+        var latestTip = await dbContext.Tips
+            .Where(t => t.Status == TipStatus.Published)
+            .OrderByDescending(t => t.PublishedAt)
+            .FirstOrDefaultAsync();
+
+        if (latestTip is null) return;
+
+        var comments = new[]
+        {
+            new Comment
+            {
+                Id = Guid.NewGuid(),
+                UserId = subscriber.Id,
+                TipId = latestTip.Id,
+                Content = "Great pick! Won nicely.",
+                IsApproved = true,
+                CreatedAt = DateTime.UtcNow.AddHours(-2),
+            },
+            new Comment
+            {
+                Id = Guid.NewGuid(),
+                UserId = adminUser.Id,
+                TipId = latestTip.Id,
+                Content = "Thanks for the feedback!",
+                IsApproved = true,
+                CreatedAt = DateTime.UtcNow.AddHours(-1),
+            },
+            new Comment
+            {
+                Id = Guid.NewGuid(),
+                UserId = subscriber.Id,
+                TipId = latestTip.Id,
+                Content = "Looking forward to tomorrow's selections.",
+                IsApproved = true,
+                CreatedAt = DateTime.UtcNow,
+            },
+        };
+
+        dbContext.Comments.AddRange(comments);
+        await dbContext.SaveChangesAsync();
+        logger.LogInformation("Sample comments seeded successfully.");
+    }
+
+    private static async Task SeedNotificationsAsync(AndyTipsterDbContext dbContext, ApplicationUser adminUser, UserManager<ApplicationUser> userManager, ILogger logger)
+    {
+        if (await dbContext.Notifications.AnyAsync()) return;
+
+        var subscriber = await userManager.FindByEmailAsync("subscriber@test.com");
+        var userIds = new List<Guid> { adminUser.Id };
+        if (subscriber is not null) userIds.Add(subscriber.Id);
+
+        var notifications = new List<Notification>();
+
+        foreach (var userId in userIds)
+        {
+            notifications.Add(new Notification
+            {
+                Id = Guid.NewGuid(),
+                UserId = userId,
+                Type = NotificationType.System,
+                Title = "Welcome to AndyTipster!",
+                Body = "Your account has been set up. Explore tips and start winning.",
+                IsRead = false,
+                CreatedAt = DateTime.UtcNow.AddDays(-1),
+            });
+            notifications.Add(new Notification
+            {
+                Id = Guid.NewGuid(),
+                UserId = userId,
+                Type = NotificationType.NewTip,
+                Title = "New tip published: Epsom Derby",
+                Body = "A new tip has been published for the Epsom Derby. Check it out!",
+                ActionUrl = "/subscriber/tips",
+                IsRead = false,
+                CreatedAt = DateTime.UtcNow,
+            });
+        }
+
+        dbContext.Notifications.AddRange(notifications);
+        await dbContext.SaveChangesAsync();
+        logger.LogInformation("Notifications seeded successfully.");
+    }
+
+    private static async Task SeedReferralAsync(AndyTipsterDbContext dbContext, ApplicationUser subscriber, ILogger logger)
+    {
+        if (await dbContext.Referrals.AnyAsync(r => r.ReferrerUserId == subscriber.Id)) return;
+
+        dbContext.Referrals.Add(new Referral
+        {
+            Id = Guid.NewGuid(),
+            ReferrerUserId = subscriber.Id,
+            ReferredUserId = null,
+            ReferralCode = "JOHN-REF-2025",
+            ReferredEmail = null,
+            IsConverted = false,
+            CreatedAt = DateTime.UtcNow.AddDays(-7),
+            ConvertedAt = null,
+        });
+
+        await dbContext.SaveChangesAsync();
+        logger.LogInformation("Referral seeded for subscriber.");
     }
 }
