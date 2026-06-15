@@ -1,5 +1,7 @@
+using AndyTipster.Application.Analytics.Services;
 using AndyTipster.Application.Blog.Services;
 using AndyTipster.Application.Community.Services;
+using AndyTipster.Application.GDPR.Services;
 using AndyTipster.Application.HelpBot.Services;
 using AndyTipster.Application.Notifications.Services;
 using AndyTipster.Application.Referral.Services;
@@ -20,6 +22,7 @@ using AndyTipster.Infrastructure.Authorization;
 using AndyTipster.Infrastructure.Configuration;
 using AndyTipster.Infrastructure.Data;
 using AndyTipster.Infrastructure.Services;
+using AndyTipster.Infrastructure.Services.Analytics;
 using AndyTipster.Infrastructure.Services.CMS;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -203,10 +206,23 @@ public static class DependencyInjection
         services.AddScoped<ITelegramService, TelegramService>();
         services.AddScoped<IHelpBotService, HelpBotService>();
 
+        // Register Phase 6 services: Analytics, GDPR, AI Image
+        services.AddScoped<IPublicAnalyticsService, PublicAnalyticsService>();
+        services.AddScoped<ISubscriberAnalyticsService, SubscriberAnalyticsService>();
+        services.AddScoped<IRevenueAnalyticsService, RevenueAnalyticsService>();
+        services.AddScoped<IGdprService, GdprService>();
+        services.AddScoped<IAiImageService, AiImageService>();
+
         // Register HttpClientFactory for social auth provider calls
         services.AddHttpClient("SocialAuth", client =>
         {
             client.Timeout = TimeSpan.FromSeconds(10);
+        });
+
+        // Register HttpClientFactory for AI image services (DALL-E, Unsplash, Pexels)
+        services.AddHttpClient("AiImage", client =>
+        {
+            client.Timeout = TimeSpan.FromSeconds(30);
         });
 
         // Register permission-based authorization handler

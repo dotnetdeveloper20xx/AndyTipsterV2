@@ -14,6 +14,13 @@ public class ApplicationUser : IdentityUser<Guid>
     public bool IsDeleted { get; set; }
     public DateTime? DeletionRequestedAt { get; set; }
 
+    // GDPR deletion fields
+    public bool IsMarkedForDeletion { get; set; }
+    public DateTime? DeletionScheduledAt { get; set; }
+    public string? DeletionReason { get; set; }
+    public string? Timezone { get; set; }
+    public DateTime? UpdatedAt { get; set; }
+
     public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
     public ICollection<Subscription> Subscriptions { get; set; } = new List<Subscription>();
     public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();

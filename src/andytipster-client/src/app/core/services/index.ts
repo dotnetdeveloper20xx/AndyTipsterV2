@@ -15,3 +15,6 @@ export * from './blog.service';
 export * from './notifications.service';
 export * from './community.service';
 export * from './referral.service';
+export * from './analytics.service';
+export * from './gdpr.service';
+export * from './cookie-consent.service';

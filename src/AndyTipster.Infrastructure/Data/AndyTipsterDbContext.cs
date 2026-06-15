@@ -44,6 +44,8 @@ public class AndyTipsterDbContext : IdentityDbContext<ApplicationUser, Role, Gui
     public DbSet<Redirect> Redirects => Set<Redirect>();
     public DbSet<MediaTag> MediaTags => Set<MediaTag>();
     public DbSet<BlogPost> BlogPosts => Set<BlogPost>();
+    public DbSet<DataExportRequest> DataExportRequests => Set<DataExportRequest>();
+    public DbSet<DataProcessingRecord> DataProcessingRecords => Set<DataProcessingRecord>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
