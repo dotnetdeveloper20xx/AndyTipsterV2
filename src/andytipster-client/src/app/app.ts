@@ -1,11 +1,13 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { Store } from '@ngrx/store';
 import { NavbarComponent } from './shared/components/navbar/navbar.component';
 import { CookieConsentComponent } from './shared/components/cookie-consent/cookie-consent.component';
 import { OfflineIndicatorComponent } from './shared/components/offline-indicator/offline-indicator.component';
 import { BottomNavComponent } from './shared/components/bottom-nav/bottom-nav.component';
 import { ToastContainerComponent } from './shared/components/toast/toast-container.component';
 import { routeTransitionAnimation } from './shared/animations/route-transition.animation';
+import { AuthActions } from './store/auth/auth.actions';
 
 @Component({
   selector: 'app-root',
@@ -27,6 +29,10 @@ import { routeTransitionAnimation } from './shared/animations/route-transition.a
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class App {
+  constructor() {
+    inject(Store).dispatch(AuthActions.initAuth());
+  }
+
   getRouteAnimationData(outlet: RouterOutlet): string {
     return outlet?.activatedRouteData?.['animation'] ?? '';
   }

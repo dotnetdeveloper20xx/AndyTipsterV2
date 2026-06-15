@@ -1,6 +1,7 @@
 import { createFeatureSelector, createSelector } from '@ngrx/store';
 import { rolesAdapter } from './roles.reducer';
 import { RolesState } from './roles.state';
+import { selectAuthRoles } from '../auth/auth.selectors';
 
 export const selectRolesState = createFeatureSelector<RolesState>('roles');
 
@@ -21,10 +22,11 @@ export const selectUserRoles = createSelector(
   (roles, userRoleIds) => roles.filter((r) => userRoleIds.includes(r.id))
 );
 
-export const selectUserRoleNames = createSelector(
-  selectUserRoles,
-  (roles) => roles.map((r) => r.name)
-);
+/**
+ * Returns the current user's role names.
+ * Reads from the AUTH state (populated from JWT on login) — the single source of truth.
+ */
+export const selectUserRoleNames = selectAuthRoles;
 
 export const selectRolesIsLoading = createSelector(
   selectRolesState,

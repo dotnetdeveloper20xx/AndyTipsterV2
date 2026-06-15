@@ -1,5 +1,6 @@
 import { createFeatureSelector, createSelector } from '@ngrx/store';
 import { PermissionsState } from './permissions.state';
+import { selectAuthPermissions } from '../auth/auth.selectors';
 
 export const selectPermissionsState = createFeatureSelector<PermissionsState>('permissions');
 
@@ -8,10 +9,11 @@ export const selectAllPermissions = createSelector(
   (state) => state.allPermissions
 );
 
-export const selectUserPermissions = createSelector(
-  selectPermissionsState,
-  (state) => state.userPermissions
-);
+/**
+ * Returns the current user's permissions.
+ * Reads from the AUTH state (populated from JWT on login) — the single source of truth.
+ */
+export const selectUserPermissions = selectAuthPermissions;
 
 export const selectHasPermission = (permission: string) =>
   createSelector(selectUserPermissions, (permissions) => permissions.includes(permission));

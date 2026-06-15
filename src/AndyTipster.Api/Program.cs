@@ -61,7 +61,12 @@ try
     // Authorization policies (permission-based) are also registered in Infrastructure DependencyInjection
 
     // ─── Controllers (for complex domain operations) ────────────────────────────
-    builder.Services.AddControllers();
+    builder.Services.AddControllers()
+        .AddJsonOptions(options =>
+        {
+            options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+            options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+        });
 
     // ─── ProblemDetails (RFC 7807) ──────────────────────────────────────────────
     builder.Services.AddProblemDetails(options =>

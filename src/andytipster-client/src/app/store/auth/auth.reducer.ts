@@ -72,10 +72,13 @@ export const authReducer = createReducer(
     error: null,
   })),
 
-  on(AuthActions.verifyRecoveryCodeSuccess, (state, { accessToken, refreshToken, expiresAt }): AuthState => ({
+  on(AuthActions.verifyRecoveryCodeSuccess, (state, { accessToken, refreshToken, expiresAt, user, roles, permissions }): AuthState => ({
     ...state,
     accessToken,
     refreshToken,
+    user: user ?? state.user,
+    roles: roles ?? state.roles,
+    permissions: permissions ?? state.permissions,
     isAuthenticated: true,
     isLoading: false,
     error: null,
@@ -136,10 +139,14 @@ export const authReducer = createReducer(
     ...initialAuthState,
   })),
 
-  on(AuthActions.refreshTokenSuccess, (state, { accessToken, refreshToken, expiresAt }): AuthState => ({
+  on(AuthActions.refreshTokenSuccess, (state, { accessToken, refreshToken, expiresAt, user, roles, permissions }): AuthState => ({
     ...state,
     accessToken,
     refreshToken,
+    user: user ?? state.user,
+    roles: roles ?? state.roles,
+    permissions: permissions ?? state.permissions,
+    isAuthenticated: true,
     tokenExpiresAt: expiresAt,
   })),
 

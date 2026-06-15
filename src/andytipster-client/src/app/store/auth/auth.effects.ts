@@ -4,6 +4,7 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { of } from 'rxjs';
 import { catchError, exhaustMap, map, tap } from 'rxjs/operators';
 import { AuthService } from '../../core/services/auth.service';
+import { extractUserFromJwt } from '../../core/utils/jwt.utils';
 import { AuthActions } from './auth.actions';
 
 @Injectable()
@@ -22,10 +23,14 @@ export class AuthEffects {
               return AuthActions.loginRequires2FA({ email: response.twoFactorEmail ?? email });
             }
             this.authService.storeTokens(response.accessToken!, response.refreshToken!);
+            const extracted = extractUserFromJwt(response.accessToken!);
             return AuthActions.loginSuccess({
               accessToken: response.accessToken!,
               refreshToken: response.refreshToken!,
               expiresAt: response.expiresAt!,
+              user: extracted?.user,
+              roles: extracted?.roles,
+              permissions: extracted?.permissions,
             });
           }),
           catchError((error) =>
@@ -43,10 +48,14 @@ export class AuthEffects {
         this.authService.verify2FA(email, code).pipe(
           map((response) => {
             this.authService.storeTokens(response.accessToken, response.refreshToken);
+            const extracted = extractUserFromJwt(response.accessToken);
             return AuthActions.verify2FASuccess({
               accessToken: response.accessToken,
               refreshToken: response.refreshToken,
               expiresAt: response.expiresAt,
+              user: extracted?.user,
+              roles: extracted?.roles,
+              permissions: extracted?.permissions,
             });
           }),
           catchError((error) =>
@@ -64,10 +73,14 @@ export class AuthEffects {
         this.authService.verifyRecoveryCode(email, code).pipe(
           map((response) => {
             this.authService.storeTokens(response.accessToken, response.refreshToken);
+            const extracted = extractUserFromJwt(response.accessToken);
             return AuthActions.verifyRecoveryCodeSuccess({
               accessToken: response.accessToken,
               refreshToken: response.refreshToken,
               expiresAt: response.expiresAt,
+              user: extracted?.user,
+              roles: extracted?.roles,
+              permissions: extracted?.permissions,
             });
           }),
           catchError((error) =>
@@ -116,10 +129,14 @@ export class AuthEffects {
               return AuthActions.loginRequires2FA({ email: response.twoFactorEmail ?? '' });
             }
             this.authService.storeTokens(response.accessToken!, response.refreshToken!);
+            const extracted = extractUserFromJwt(response.accessToken!);
             return AuthActions.loginSuccess({
               accessToken: response.accessToken!,
               refreshToken: response.refreshToken!,
               expiresAt: response.expiresAt!,
+              user: extracted?.user,
+              roles: extracted?.roles,
+              permissions: extracted?.permissions,
             });
           }),
           catchError((error) =>
@@ -149,10 +166,14 @@ export class AuthEffects {
         this.authService.refreshToken().pipe(
           map((response) => {
             this.authService.storeTokens(response.accessToken, response.refreshToken);
+            const extracted = extractUserFromJwt(response.accessToken);
             return AuthActions.refreshTokenSuccess({
               accessToken: response.accessToken,
               refreshToken: response.refreshToken,
               expiresAt: response.expiresAt,
+              user: extracted?.user,
+              roles: extracted?.roles,
+              permissions: extracted?.permissions,
             });
           }),
           catchError(() => of(AuthActions.refreshTokenFailure()))
@@ -168,6 +189,17 @@ export class AuthEffects {
         const accessToken = this.authService.getStoredAccessToken();
         const refreshToken = this.authService.getStoredRefreshToken();
         if (accessToken && refreshToken) {
+          const extracted = extractUserFromJwt(accessToken);
+          if (extracted) {
+            return AuthActions.loginSuccess({
+              accessToken,
+              refreshToken,
+              expiresAt: '',
+              user: extracted.user,
+              roles: extracted.roles,
+              permissions: extracted.permissions,
+            });
+          }
           return AuthActions.refreshToken();
         }
         return AuthActions.refreshTokenFailure();
@@ -179,7 +211,11 @@ export class AuthEffects {
     () =>
       this.actions$.pipe(
         ofType(AuthActions.loginSuccess, AuthActions.verify2FASuccess, AuthActions.verifyRecoveryCodeSuccess),
-        tap(() => this.router.navigate(['/']))
+        tap((action) => {
+          // Don't navigate on initAuth restore (expiresAt is empty string when restoring from storage)
+          if ('expiresAt' in action && action.expiresAt === '') return;
+          this.router.navigate(['/']);
+        })
       ),
     { dispatch: false }
   );
