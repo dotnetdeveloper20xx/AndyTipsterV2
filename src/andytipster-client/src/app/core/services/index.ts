@@ -11,3 +11,4 @@ export * from './checkout.service';
 export * from './subscription.service';
 export * from './cms.service';
 export * from './media.service';
+export * from './blog.service';

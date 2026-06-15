@@ -2,8 +2,9 @@ import { inject, Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { of } from 'rxjs';
 import { catchError, exhaustMap, map } from 'rxjs/operators';
-import { TipsService } from '../../core/services/tips.service';
+import { TipsService, TipDto, CreateTipDto } from '../../core/services/tips.service';
 import { TipsActions } from './tips.actions';
+import { Tip } from './tips.state';
 
 @Injectable()
 export class TipsEffects {
@@ -14,8 +15,8 @@ export class TipsEffects {
     this.actions$.pipe(
       ofType(TipsActions.loadTips),
       exhaustMap(({ page, pageSize, category }) =>
-        this.tipsService.getTips(page, pageSize, category).pipe(
-          map((response) => TipsActions.loadTipsSuccess({ tips: response.items, totalCount: response.totalCount })),
+        this.tipsService.getTips({ page, pageSize, categoryId: category }).pipe(
+          map((response) => TipsActions.loadTipsSuccess({ tips: response.items as unknown as Tip[], totalCount: response.totalCount })),
           catchError((error) =>
             of(TipsActions.loadTipsFailure({ error: error.message ?? 'Failed to load tips' }))
           )
@@ -29,7 +30,7 @@ export class TipsEffects {
       ofType(TipsActions.loadTip),
       exhaustMap(({ tipId }) =>
         this.tipsService.getTip(tipId).pipe(
-          map((tip) => TipsActions.loadTipSuccess({ tip })),
+          map((tip) => TipsActions.loadTipSuccess({ tip: tip as unknown as Tip })),
           catchError((error) =>
             of(TipsActions.loadTipFailure({ error: error.message ?? 'Failed to load tip' }))
           )
@@ -42,8 +43,8 @@ export class TipsEffects {
     this.actions$.pipe(
       ofType(TipsActions.createTip),
       exhaustMap(({ tip }) =>
-        this.tipsService.createTip(tip).pipe(
-          map((created) => TipsActions.createTipSuccess({ tip: created })),
+        this.tipsService.createTip(tip as unknown as CreateTipDto).pipe(
+          map((created) => TipsActions.createTipSuccess({ tip: created as unknown as Tip })),
           catchError((error) =>
             of(TipsActions.createTipFailure({ error: error.message ?? 'Failed to create tip' }))
           )
@@ -57,7 +58,7 @@ export class TipsEffects {
       ofType(TipsActions.publishTip),
       exhaustMap(({ tipId }) =>
         this.tipsService.publishTip(tipId).pipe(
-          map((tip) => TipsActions.publishTipSuccess({ tip })),
+          map((tip) => TipsActions.publishTipSuccess({ tip: tip as unknown as Tip })),
           catchError((error) =>
             of(TipsActions.publishTipFailure({ error: error.message ?? 'Failed to publish tip' }))
           )
@@ -71,7 +72,7 @@ export class TipsEffects {
       ofType(TipsActions.recordResult),
       exhaustMap(({ tipId, result }) =>
         this.tipsService.recordResult(tipId, result).pipe(
-          map((tip) => TipsActions.recordResultSuccess({ tip })),
+          map((tip) => TipsActions.recordResultSuccess({ tip: tip as unknown as Tip })),
           catchError((error) =>
             of(TipsActions.recordResultFailure({ error: error.message ?? 'Failed to record result' }))
           )

@@ -18,6 +18,10 @@ export const PUBLIC_ROUTES: Routes = [
     loadComponent: () => import('./pages/blog/blog.component').then(m => m.BlogComponent),
   },
   {
+    path: 'blog/:slug',
+    loadComponent: () => import('./pages/blog/blog-detail.component').then(m => m.BlogDetailComponent),
+  },
+  {
     path: 'faq',
     loadComponent: () => import('./pages/faq/faq.component').then(m => m.FaqComponent),
   },

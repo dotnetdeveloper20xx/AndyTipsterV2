@@ -1,3 +1,5 @@
+using AndyTipster.Application.Blog.Services;
+using AndyTipster.Application.Tips.Services;
 using System.Text;
 using AndyTipster.Application.Audit.Services;
 using AndyTipster.Application.Auth.Services;
@@ -175,6 +177,14 @@ public static class DependencyInjection
         services.AddScoped<INavigationService, NavigationService>();
         services.AddScoped<ISeoService, SeoService>();
         services.AddScoped<ISiteSettingsService, SiteSettingsService>();
+
+        // Register Tips Engine services
+        services.AddScoped<ITipService, TipService>();
+        services.AddScoped<ICategoryService, CategoryService>();
+        services.AddScoped<IAccessGatingService, AccessGatingService>();
+
+        // Register Blog services
+        services.AddScoped<IBlogService, BlogService>();
 
         // Register HttpClientFactory for social auth provider calls
         services.AddHttpClient("SocialAuth", client =>

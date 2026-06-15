@@ -1,3 +1,4 @@
+using AndyTipster.Domain.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 
@@ -26,6 +27,23 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
 
         var problemDetails = exception switch
         {
+            ValidationException validationEx => CreateValidationProblemDetails(validationEx, httpContext),
+            NotFoundException notFoundEx => new ProblemDetails
+            {
+                Type = "https://andytipster.com/errors/not-found",
+                Title = "Not Found",
+                Status = StatusCodes.Status404NotFound,
+                Detail = notFoundEx.Message,
+                Instance = httpContext.Request.Path
+            },
+            BusinessRuleException businessEx => new ProblemDetails
+            {
+                Type = "https://andytipster.com/errors/business-rule-violation",
+                Title = "Business Rule Violation",
+                Status = StatusCodes.Status422UnprocessableEntity,
+                Detail = businessEx.Message,
+                Instance = httpContext.Request.Path
+            },
             ArgumentException argEx => new ProblemDetails
             {
                 Type = "https://andytipster.com/errors/bad-request",
@@ -70,5 +88,19 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
 
         await httpContext.Response.WriteAsJsonAsync(problemDetails, cancellationToken);
         return true;
+    }
+
+    private static ProblemDetails CreateValidationProblemDetails(ValidationException ex, HttpContext httpContext)
+    {
+        var problemDetails = new ProblemDetails
+        {
+            Type = "https://andytipster.com/errors/validation-failed",
+            Title = "Validation Failed",
+            Status = StatusCodes.Status400BadRequest,
+            Detail = "One or more validation errors occurred.",
+            Instance = httpContext.Request.Path
+        };
+        problemDetails.Extensions["errors"] = ex.Errors;
+        return problemDetails;
     }
 }

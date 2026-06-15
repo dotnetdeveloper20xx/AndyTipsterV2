@@ -1,7 +1,7 @@
 import { EntityState } from '@ngrx/entity';
 
 export type TipStatus = 'Draft' | 'Published' | 'Archived';
-export type TipResult = 'Pending' | 'Won' | 'Lost' | 'Void' | 'Push';
+export type TipResult = 'Won' | 'Lost' | 'Void' | 'Push';
 
 export interface Tip {
   id: string;
@@ -10,14 +10,16 @@ export interface Tip {
   selection: string;
   odds: number;
   stake: number;
-  category: string;
+  categoryId: string;
+  categoryName: string;
   commentary: string | null;
   status: TipStatus;
-  result: TipResult;
+  result: TipResult | null;
   profitLoss: number | null;
   publishedAt: string | null;
+  scheduledPublishAt: string | null;
   createdAt: string;
-  updatedAt: string;
+  createdByUserId: string;
 }
 
 export interface TipsState extends EntityState<Tip> {

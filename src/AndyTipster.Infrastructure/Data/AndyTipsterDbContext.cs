@@ -43,6 +43,7 @@ public class AndyTipsterDbContext : IdentityDbContext<ApplicationUser, Role, Gui
     public DbSet<SiteSettings> SiteSettings => Set<SiteSettings>();
     public DbSet<Redirect> Redirects => Set<Redirect>();
     public DbSet<MediaTag> MediaTags => Set<MediaTag>();
+    public DbSet<BlogPost> BlogPosts => Set<BlogPost>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
