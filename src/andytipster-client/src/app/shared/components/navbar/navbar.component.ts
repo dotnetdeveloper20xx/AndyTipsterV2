@@ -74,8 +74,8 @@ export interface NavItem {
               <li class="menu-title">
                 <span>{{ userDisplayName }}</span>
               </li>
-              <li role="none"><a routerLink="/profile" role="menuitem">Profile</a></li>
-              <li role="none"><a routerLink="/settings" role="menuitem">Settings</a></li>
+              <li role="none"><a routerLink="/subscriber/profile" role="menuitem">Profile</a></li>
+              <li role="none"><a routerLink="/subscriber/profile" role="menuitem">Settings</a></li>
               @if (isAdmin) {
                 <div class="divider my-0"></div>
                 <li role="none"><a routerLink="/admin" role="menuitem">Admin Dashboard</a></li>
@@ -101,9 +101,11 @@ export class NavbarComponent {
 
   private readonly navItems: NavItem[] = [
     { label: 'Home', route: '/', authRequired: false },
-    { label: 'Tips', route: '/tips', authRequired: true },
-    { label: 'Plans', route: '/plans', authRequired: false },
-    { label: 'Admin', route: '/admin', roles: ['admin', 'super-admin'], authRequired: true },
+    { label: 'Pricing', route: '/pricing', authRequired: false, guestOnly: true },
+    { label: 'My Tips', route: '/subscriber/tips', authRequired: true },
+    { label: 'Results', route: '/subscriber/results', authRequired: true },
+    { label: 'Billing', route: '/subscriber/billing', authRequired: true },
+    { label: 'Admin', route: '/admin', roles: ['Admin', 'Super Admin'], authRequired: true },
   ];
 
   private roles: string[] = [];
@@ -119,7 +121,7 @@ export class NavbarComponent {
     });
     this.store.select(selectUserRoleNames).subscribe((roles) => {
       this.roles = roles;
-      this.isAdmin = roles.includes('admin') || roles.includes('super-admin');
+      this.isAdmin = roles.includes('Admin') || roles.includes('Super Admin');
     });
     this.store.select(selectUserPermissions).subscribe((permissions) => {
       this.permissions = permissions;

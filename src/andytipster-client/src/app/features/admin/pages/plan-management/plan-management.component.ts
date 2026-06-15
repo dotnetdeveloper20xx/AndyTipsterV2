@@ -1,13 +1,20 @@
+/**
+ * PlanManagementComponent
+ *
+ * Pattern: Admin pages use signals + ngModel for simple filter/search bindings.
+ * Auth pages use ReactiveFormsModule for complex forms with validation.
+ */
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PlansService, PromoCode, CreatePromoCodeRequest } from '../../../../core/services/plans.service';
 import { Plan } from '../../../../store/plans/plans.state';
+import { CurrencyDisplayPipe } from '../../../../shared/pipes/currency-display.pipe';
 
 @Component({
   selector: 'app-plan-management',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, CurrencyDisplayPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <section class="p-6">
@@ -29,7 +36,7 @@ import { Plan } from '../../../../store/plans/plans.state';
                 @if (plan.syncStatus === 'SyncPending') { <span class="badge badge-warning">Sync Pending</span> }
                 @if (plan.syncStatus === 'SyncFailed') { <span class="badge badge-error">Sync Failed</span> }
               </h2>
-              <p class="text-2xl font-bold">{{ plan.currency }} {{ plan.price }} / {{ plan.billingCycle }}</p>
+              <p class="text-2xl font-bold">{{ plan.price | currencyDisplay:plan.currency }} / {{ plan.billingCycle }}</p>
               @if (plan.trialPeriodDays > 0) {
                 <p class="text-sm text-success">{{ plan.trialPeriodDays }}-day free trial</p>
               }
@@ -59,9 +66,9 @@ import { Plan } from '../../../../store/plans/plans.state';
               <tr>
                 <td class="font-mono">{{ code.code }}</td>
                 <td>{{ code.discountType }}</td>
-                <td>{{ code.discountType === 'percentage' ? code.discountValue + '%' : '£' + code.discountValue }}</td>
+                <td>{{ code.discountType === 'percentage' ? code.discountValue + '%' : (code.discountValue | currencyDisplay) }}</td>
                 <td>{{ code.currentUses }} / {{ code.maxUses }}</td>
-                <td>{{ code.expiresAt ? (code.expiresAt | date:'short') : 'Never' }}</td>
+                <td>{{ code.expiresAt ? (code.expiresAt | date:'dd MMM yyyy') : 'Never' }}</td>
                 <td><input type="checkbox" class="toggle toggle-sm" [checked]="code.isActive" (change)="togglePromoCode(code)" /></td>
                 <td><button class="btn btn-xs btn-error btn-ghost" (click)="deletePromoCode(code.id)">Delete</button></td>
               </tr>

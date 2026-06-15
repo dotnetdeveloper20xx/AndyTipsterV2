@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from '../../core/guards/auth.guard';
+import { subscriptionGuard } from '../../core/guards/subscription.guard';
 
 export const SUBSCRIBER_ROUTES: Routes = [
   {
@@ -14,10 +15,12 @@ export const SUBSCRIBER_ROUTES: Routes = [
       {
         path: 'tips',
         loadComponent: () => import('./pages/tips-feed/tips-feed.component').then(m => m.TipsFeedComponent),
+        canActivate: [subscriptionGuard],
       },
       {
         path: 'results',
         loadComponent: () => import('./pages/results/results.component').then(m => m.ResultsComponent),
+        canActivate: [subscriptionGuard],
       },
       {
         path: 'billing',

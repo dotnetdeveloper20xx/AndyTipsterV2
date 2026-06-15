@@ -3,8 +3,7 @@ import { ActivatedRouteSnapshot, CanActivateFn, Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { map, take } from 'rxjs/operators';
 import { combineLatest } from 'rxjs';
-import { selectIsAuthenticated } from '../../store/auth/auth.selectors';
-import { selectUserPermissions } from '../../store/permissions/permissions.selectors';
+import { selectIsAuthenticated, selectAuthPermissions } from '../../store/auth/auth.selectors';
 
 export const permissionGuard: CanActivateFn = (route: ActivatedRouteSnapshot) => {
   const store = inject(Store);
@@ -13,7 +12,7 @@ export const permissionGuard: CanActivateFn = (route: ActivatedRouteSnapshot) =>
 
   return combineLatest([
     store.select(selectIsAuthenticated),
-    store.select(selectUserPermissions),
+    store.select(selectAuthPermissions),
   ]).pipe(
     take(1),
     map(([isAuthenticated, userPermissions]) => {

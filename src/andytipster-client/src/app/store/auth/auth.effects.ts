@@ -18,7 +18,7 @@ export class AuthEffects {
       exhaustMap(({ email, password }) =>
         this.authService.login(email, password).pipe(
           map((response) => {
-            if (response.requires2FA) {
+            if (response.requiresTwoFactor) {
               return AuthActions.loginRequires2FA({ email: response.twoFactorEmail ?? email });
             }
             this.authService.storeTokens(response.accessToken!, response.refreshToken!);
@@ -112,7 +112,7 @@ export class AuthEffects {
       exhaustMap(({ provider, accessToken }) =>
         this.authService.socialLogin(provider, accessToken).pipe(
           map((response) => {
-            if (response.requires2FA) {
+            if (response.requiresTwoFactor) {
               return AuthActions.loginRequires2FA({ email: response.twoFactorEmail ?? '' });
             }
             this.authService.storeTokens(response.accessToken!, response.refreshToken!);

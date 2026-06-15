@@ -1,3 +1,7 @@
+/**
+ * Permissions store slice — holds SYSTEM-WIDE permission definitions for admin management.
+ * For the CURRENT USER's permissions, use selectAuthPermissions from the auth slice.
+ */
 export interface Permission {
   id: string;
   name: string;

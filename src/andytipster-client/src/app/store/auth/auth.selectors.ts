@@ -39,6 +39,34 @@ export const selectHasRole = (role: string) =>
 export const selectHasPermission = (permission: string) =>
   createSelector(selectAuthPermissions, (permissions) => permissions.includes(permission));
 
+/**
+ * Pre-defined cached role selectors for commonly checked roles.
+ * Use these in components instead of calling selectHasRole() directly.
+ * 
+ * Note: selectHasRole and selectHasPermission factory functions above create new selector
+ * instances on each call. Store the result as a class property in components rather than
+ * calling them directly in templates to benefit from memoization.
+ */
+export const selectIsAdmin = createSelector(
+  selectAuthRoles,
+  (roles) => roles.includes('Admin') || roles.includes('Super Admin')
+);
+
+export const selectIsSuperAdmin = createSelector(
+  selectAuthRoles,
+  (roles) => roles.includes('Super Admin')
+);
+
+export const selectIsModerator = createSelector(
+  selectAuthRoles,
+  (roles) => roles.includes('Moderator')
+);
+
+export const selectIsSubscriber = createSelector(
+  selectAuthRoles,
+  (roles) => roles.includes('Subscriber')
+);
+
 export const selectAuthIsLoading = createSelector(
   selectAuthState,
   (state) => state.isLoading

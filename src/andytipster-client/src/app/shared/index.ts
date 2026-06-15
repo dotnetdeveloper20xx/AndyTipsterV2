@@ -16,3 +16,5 @@ export * from './directives/scroll-reveal.directive';
 export * from './directives/counter-animation.directive';
 export * from './directives/card-hover.directive';
 export * from './animations/route-transition.animation';
+export * from './pipes/currency-display.pipe';
+export * from './constants/date-formats';

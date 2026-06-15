@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CheckoutService, CheckoutSummary, PromoCodeValidation } from '../../../../core/services/checkout.service';
+import { CurrencyDisplayPipe } from '../../../../shared/pipes/currency-display.pipe';
 
 @Component({
   selector: 'app-checkout',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, CurrencyDisplayPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <section class="max-w-2xl mx-auto p-6">
@@ -21,7 +22,7 @@ import { CheckoutService, CheckoutSummary, PromoCodeValidation } from '../../../
             <h2 class="card-title justify-center text-2xl">Subscription Confirmed!</h2>
             <p class="text-base-content/70 mt-2">You're now subscribed to <strong>{{ summary()?.planName }}</strong></p>
             @if (summary()?.firstBillingDate) {
-              <p class="text-sm">Next billing date: {{ summary()?.firstBillingDate | date }}</p>
+              <p class="text-sm">Next billing date: {{ summary()?.firstBillingDate | date:'dd MMM yyyy' }}</p>
             }
             <div class="card-actions justify-center mt-4">
               <button class="btn btn-primary" (click)="goToDashboard()">Go to Dashboard</button>
@@ -40,23 +41,23 @@ import { CheckoutService, CheckoutSummary, PromoCodeValidation } from '../../../
               <div class="divider"></div>
               <div class="flex justify-between">
                 <span>{{ summary()!.planName }} ({{ summary()!.billingCycle }})</span>
-                <span>{{ summary()!.currency }} {{ summary()!.originalPrice | number:'1.2-2' }}</span>
+                <span>{{ summary()!.originalPrice | currencyDisplay:summary()!.currency }}</span>
               </div>
               @if (summary()!.discountAmount) {
                 <div class="flex justify-between text-success">
                   <span>Discount ({{ summary()!.promoCodeApplied }})</span>
-                  <span>-{{ summary()!.currency }} {{ summary()!.discountAmount | number:'1.2-2' }}</span>
+                  <span>-{{ summary()!.discountAmount | currencyDisplay:summary()!.currency }}</span>
                 </div>
               }
               @if (summary()!.trialDays > 0) {
                 <div class="alert alert-info mt-2">
-                  <span>🎁 {{ summary()!.trialDays }}-day free trial — billing starts {{ summary()!.trialEndDate | date }}</span>
+                  <span>🎁 {{ summary()!.trialDays }}-day free trial — billing starts {{ summary()!.trialEndDate | date:'dd MMM yyyy' }}</span>
                 </div>
               }
               <div class="divider"></div>
               <div class="flex justify-between text-lg font-bold">
                 <span>Total</span>
-                <span>{{ summary()!.currency }} {{ summary()!.finalPrice | number:'1.2-2' }}</span>
+                <span>{{ summary()!.finalPrice | currencyDisplay:summary()!.currency }}</span>
               </div>
 
               <!-- Promo Code -->

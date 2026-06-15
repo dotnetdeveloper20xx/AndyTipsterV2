@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { SubscriptionService, SubscriptionSelfService } from '../../../../core/services/subscription.service';
 import { PlansService } from '../../../../core/services/plans.service';
+import { CurrencyDisplayPipe } from '../../../../shared/pipes/currency-display.pipe';
 
 @Component({
   selector: 'app-billing',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, CurrencyDisplayPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <section class="max-w-4xl mx-auto p-6">
@@ -43,11 +44,11 @@ import { PlansService } from '../../../../core/services/plans.service';
               </div>
               <div>
                 <p class="text-sm text-base-content/60">Next Billing</p>
-                <p class="font-semibold">{{ subscription()!.nextBillingDate | date }}</p>
+                <p class="font-semibold">{{ subscription()!.nextBillingDate | date:'dd MMM yyyy' }}</p>
               </div>
               <div>
                 <p class="text-sm text-base-content/60">Amount</p>
-                <p class="font-semibold">{{ subscription()!.currency }} {{ subscription()!.price | number:'1.2-2' }} / {{ subscription()!.billingCycle }}</p>
+                <p class="font-semibold">{{ subscription()!.price | currencyDisplay:subscription()!.currency }} / {{ subscription()!.billingCycle }}</p>
               </div>
             </div>
             <div class="card-actions justify-end mt-4">
@@ -74,8 +75,8 @@ import { PlansService } from '../../../../core/services/plans.service';
                   <tbody>
                     @for (payment of subscription()!.paymentHistory; track payment.id) {
                       <tr>
-                        <td>{{ payment.paidAt | date:'short' }}</td>
-                        <td>{{ payment.currency }} {{ payment.amount | number:'1.2-2' }}</td>
+                        <td>{{ payment.paidAt | date:'dd MMM yyyy' }}</td>
+                        <td>{{ payment.amount | currencyDisplay:payment.currency }}</td>
                         <td><span class="badge badge-sm" [class.badge-success]="payment.status === 'completed' || payment.status === 'succeeded'">{{ payment.status }}</span></td>
                         <td>{{ payment.provider }}</td>
                       </tr>

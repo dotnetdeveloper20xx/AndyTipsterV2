@@ -16,7 +16,7 @@ export interface AuthState {
   error: string | null;
   requires2FA: boolean;
   twoFactorEmail: string | null;
-  tokenExpiresAt: number | null;
+  tokenExpiresAt: string | null;
 }
 
 export const initialAuthState: AuthState = {

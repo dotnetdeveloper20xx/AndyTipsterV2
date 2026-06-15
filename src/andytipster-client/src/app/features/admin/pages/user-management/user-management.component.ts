@@ -1,3 +1,10 @@
+/**
+ * UserManagementComponent
+ *
+ * Pattern: Admin pages use signals + ngModel for simple filter/search bindings.
+ * Auth pages use ReactiveFormsModule for complex forms with validation.
+ * The DataTable component handles search, sort, filter, and pagination via its outputs.
+ */
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -8,11 +15,20 @@ import {
   BulkActionResponse,
   ImpersonateResponse,
 } from '../../../../core/services/admin-users.service';
+import {
+  DataTableComponent,
+  DataTableColumn,
+  PageChangeEvent,
+  SortState,
+  FilterState,
+  BulkAction,
+  BulkActionEvent,
+} from '../../../../shared/components/data-table/index';
 
 @Component({
   selector: 'app-user-management',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, DataTableComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <section class="p-6 space-y-6">
@@ -32,59 +48,6 @@ import {
           </svg>
           <span>Impersonating: <strong>{{ impersonation()!.impersonatedUserName }}</strong> ({{ impersonation()!.impersonatedUserEmail }})</span>
           <button class="btn btn-sm btn-ghost" (click)="endImpersonation()">End Impersonation</button>
-        </div>
-      }
-
-      <!-- Search and Filters -->
-      <div class="card bg-base-200 p-4">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div class="form-control">
-            <label class="label" for="search-input"><span class="label-text">Search</span></label>
-            <input id="search-input" type="text" class="input input-bordered input-sm"
-              placeholder="Name or email..." [(ngModel)]="searchTerm"
-              (input)="onSearchChange()" aria-label="Search users by name or email" />
-          </div>
-          <div class="form-control">
-            <label class="label" for="role-filter"><span class="label-text">Role</span></label>
-            <select id="role-filter" class="select select-bordered select-sm" [(ngModel)]="roleFilter" (change)="loadUsers()">
-              <option value="">All Roles</option>
-              <option value="Super Admin">Super Admin</option>
-              <option value="Admin">Admin</option>
-              <option value="Moderator">Moderator</option>
-              <option value="Subscriber">Subscriber</option>
-              <option value="Free User">Free User</option>
-            </select>
-          </div>
-          <div class="form-control">
-            <label class="label" for="status-filter"><span class="label-text">Status</span></label>
-            <select id="status-filter" class="select select-bordered select-sm" [(ngModel)]="statusFilter" (change)="loadUsers()">
-              <option value="">All Statuses</option>
-              <option value="active">Active</option>
-              <option value="suspended">Suspended</option>
-              <option value="unverified">Unverified</option>
-            </select>
-          </div>
-          <div class="form-control">
-            <label class="label" for="page-size"><span class="label-text">Page Size</span></label>
-            <select id="page-size" class="select select-bordered select-sm" [(ngModel)]="pageSize" (change)="loadUsers()">
-              <option [ngValue]="10">10</option>
-              <option [ngValue]="25">25</option>
-              <option [ngValue]="50">50</option>
-              <option [ngValue]="100">100</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      <!-- Bulk Actions Bar -->
-      @if (selectedUsers().length > 0) {
-        <div class="alert shadow-md flex items-center justify-between">
-          <span>{{ selectedUsers().length }} user(s) selected</span>
-          <div class="flex gap-2">
-            <button class="btn btn-warning btn-sm" (click)="showBulkConfirmation('suspend')">Suspend</button>
-            <button class="btn btn-info btn-sm" (click)="showBulkConfirmation('role_change')">Change Role</button>
-            <button class="btn btn-ghost btn-sm" (click)="clearSelection()">Clear</button>
-          </div>
         </div>
       }
 
@@ -116,167 +79,112 @@ import {
       }
 
       <!-- Data Table -->
-      @if (loading()) {
-        <div class="space-y-2">
-          @for (i of [1,2,3,4,5]; track i) {
-            <div class="skeleton h-12 w-full"></div>
-          }
-        </div>
-      } @else if (error()) {
-        <div class="alert alert-error">
-          <span>{{ error() }}</span>
-          <button class="btn btn-sm btn-ghost" (click)="loadUsers()">Retry</button>
-        </div>
-      } @else {
-        <div class="overflow-x-auto">
-          <table class="table table-zebra w-full" aria-label="User management table">
-            <thead>
-              <tr>
-                <th>
-                  <input type="checkbox" class="checkbox checkbox-sm"
-                    [checked]="allSelected()"
-                    (change)="toggleSelectAll()" aria-label="Select all users" />
-                </th>
-                <th class="cursor-pointer" (click)="sortBy('displayName')">
-                  Name
-                  @if (currentSort() === 'displayName') {
-                    <span>{{ currentSortDir() === 'asc' ? '↑' : '↓' }}</span>
-                  }
-                </th>
-                <th class="cursor-pointer" (click)="sortBy('email')">
-                  Email
-                  @if (currentSort() === 'email') {
-                    <span>{{ currentSortDir() === 'asc' ? '↑' : '↓' }}</span>
-                  }
-                </th>
-                <th>Roles</th>
-                <th>Status</th>
-                <th>Plan</th>
-                <th class="cursor-pointer" (click)="sortBy('createdAt')">
-                  Registered
-                  @if (currentSort() === 'createdAt') {
-                    <span>{{ currentSortDir() === 'asc' ? '↑' : '↓' }}</span>
-                  }
-                </th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (user of users(); track user.id) {
-                <tr>
-                  <td>
-                    <input type="checkbox" class="checkbox checkbox-sm"
-                      [checked]="isSelected(user.id)"
-                      (change)="toggleUser(user.id)" [attr.aria-label]="'Select ' + user.displayName" />
-                  </td>
-                  <td>
-                    <div class="flex items-center gap-2">
-                      <div class="avatar placeholder">
-                        <div class="w-8 h-8 rounded-full bg-neutral text-neutral-content">
-                          @if (user.avatarUrl) {
-                            <img [src]="user.avatarUrl" [alt]="user.displayName + ' avatar'" />
-                          } @else {
-                            <span class="text-xs">{{ user.displayName.charAt(0) }}</span>
-                          }
-                        </div>
-                      </div>
-                      <span>{{ user.displayName }}</span>
-                    </div>
-                  </td>
-                  <td>{{ user.email }}</td>
-                  <td>
-                    @for (role of user.roles; track role) {
-                      <span class="badge badge-sm badge-outline mr-1">{{ role }}</span>
-                    }
-                  </td>
-                  <td>
-                    <span class="badge badge-sm" [class.badge-success]="user.status === 'Active'"
-                      [class.badge-error]="user.status === 'Suspended'"
-                      [class.badge-warning]="user.status === 'Unverified'">
-                      {{ user.status }}
-                    </span>
-                  </td>
-                  <td>{{ user.plan || '—' }}</td>
-                  <td>{{ user.createdAt | date:'mediumDate' }}</td>
-                  <td>
-                    <div class="flex gap-1">
-                      <button class="btn btn-xs btn-ghost" (click)="impersonateUser(user.id)"
-                        title="Impersonate" aria-label="Impersonate user">👤</button>
-                      <button class="btn btn-xs btn-ghost" (click)="suspendUser(user.id)"
-                        [disabled]="user.status === 'Suspended'"
-                        title="Suspend" aria-label="Suspend user">🚫</button>
-                    </div>
-                  </td>
-                </tr>
-              } @empty {
-                <tr>
-                  <td colspan="8" class="text-center py-8">
-                    <p class="text-base-content/60">No users found matching your criteria.</p>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Pagination -->
-        <div class="flex items-center justify-between mt-4">
-          <span class="text-sm text-base-content/60">
-            Showing {{ ((currentPage() - 1) * pageSize) + 1 }}–{{ Math.min(currentPage() * pageSize, totalCount()) }}
-            of {{ totalCount() }} users
-          </span>
-          <div class="join">
-            <button class="join-item btn btn-sm" [disabled]="currentPage() <= 1" (click)="goToPage(currentPage() - 1)">«</button>
-            @for (p of pageNumbers(); track p) {
-              <button class="join-item btn btn-sm" [class.btn-active]="p === currentPage()" (click)="goToPage(p)">{{ p }}</button>
-            }
-            <button class="join-item btn btn-sm" [disabled]="currentPage() >= totalPages()" (click)="goToPage(currentPage() + 1)">»</button>
-          </div>
-        </div>
-      }
+      <app-data-table
+        [columns]="columns"
+        [data]="users()"
+        [loading]="loading()"
+        [error]="error()"
+        [totalCount]="totalCount()"
+        [pageSize]="pageSize"
+        [selectable]="true"
+        [exportable]="false"
+        [bulkActions]="tableBulkActions"
+        (pageChange)="onPageChange($event)"
+        (sortChange)="onSortChange($event)"
+        (filterChange)="onFilterChange($event)"
+        (selectionChange)="onSelectionChange($event)"
+        (search)="onSearch($event)"
+        (bulkAction)="onBulkAction($event)"
+        (retry)="loadUsers()"
+      />
     </section>
   `,
 })
 export class UserManagementComponent implements OnInit {
   private readonly usersService = inject(AdminUsersService);
-  protected readonly Math = Math;
 
   // State
   users = signal<UserSummary[]>([]);
   totalCount = signal(0);
-  totalPages = signal(0);
-  currentPage = signal(1);
   loading = signal(false);
   error = signal<string | null>(null);
   exporting = signal(false);
   impersonation = signal<ImpersonateResponse | null>(null);
   bulkConfirmation = signal<string | null>(null);
-  currentSort = signal('createdAt');
-  currentSortDir = signal<'asc' | 'desc'>('desc');
 
-  // Filters
-  searchTerm = '';
-  roleFilter = '';
-  statusFilter = '';
+  // Filters & Sort
+  private searchTerm = '';
+  private roleFilter = '';
+  private statusFilter = '';
+  private currentSort = 'createdAt';
+  private currentSortDir: 'asc' | 'desc' = 'desc';
+  private currentPage = 1;
   pageSize = 25;
   bulkRoleName = 'Subscriber';
 
   // Selection
-  private selectedSet = signal(new Set<string>());
-  selectedUsers = computed(() => [...this.selectedSet()]);
-  allSelected = computed(() => this.users().length > 0 && this.users().every(u => this.selectedSet().has(u.id)));
+  private selectedSet = signal<UserSummary[]>([]);
+  selectedUsers = computed(() => this.selectedSet());
 
-  pageNumbers = computed(() => {
-    const total = this.totalPages();
-    const current = this.currentPage();
-    const pages: number[] = [];
-    const start = Math.max(1, current - 2);
-    const end = Math.min(total, current + 2);
-    for (let i = start; i <= end; i++) pages.push(i);
-    return pages;
-  });
+  // Table column definitions
+  columns: DataTableColumn<UserSummary>[] = [
+    {
+      field: 'displayName',
+      header: 'Name',
+      sortable: true,
+      filterable: true,
+      filterType: 'text',
+    },
+    {
+      field: 'email',
+      header: 'Email',
+      sortable: true,
+      filterable: true,
+      filterType: 'text',
+    },
+    {
+      field: 'roles',
+      header: 'Roles',
+      filterable: true,
+      filterType: 'dropdown',
+      filterOptions: [
+        { label: 'Super Admin', value: 'Super Admin' },
+        { label: 'Admin', value: 'Admin' },
+        { label: 'Moderator', value: 'Moderator' },
+        { label: 'Subscriber', value: 'Subscriber' },
+        { label: 'Free User', value: 'Free User' },
+      ],
+      render: (row) => row.roles?.join(', ') ?? '',
+    },
+    {
+      field: 'status',
+      header: 'Status',
+      filterable: true,
+      filterType: 'dropdown',
+      filterOptions: [
+        { label: 'Active', value: 'active' },
+        { label: 'Suspended', value: 'suspended' },
+        { label: 'Unverified', value: 'unverified' },
+      ],
+    },
+    {
+      field: 'plan',
+      header: 'Plan',
+      render: (row) => row.plan || '—',
+    },
+    {
+      field: 'createdAt',
+      header: 'Registration Date',
+      sortable: true,
+      render: (row) => row.createdAt ? new Date(row.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '',
+    },
+  ];
 
-  private searchTimeout: ReturnType<typeof setTimeout> | null = null;
+  // Bulk actions shown in the data table
+  tableBulkActions: BulkAction[] = [
+    { id: 'suspend', label: 'Suspend', variant: 'warning' },
+    { id: 'role_change', label: 'Change Role', variant: 'secondary' },
+  ];
 
   ngOnInit(): void {
     this.loadUsers();
@@ -287,81 +195,72 @@ export class UserManagementComponent implements OnInit {
     this.error.set(null);
 
     const request: UserListRequest = {
-      page: this.currentPage(),
+      page: this.currentPage,
       pageSize: this.pageSize,
       search: this.searchTerm || undefined,
       roleFilter: this.roleFilter || undefined,
       statusFilter: this.statusFilter || undefined,
-      sortBy: this.currentSort(),
-      sortDirection: this.currentSortDir(),
+      sortBy: this.currentSort,
+      sortDirection: this.currentSortDir,
     };
 
     this.usersService.getUsers(request).subscribe({
       next: (res) => {
         this.users.set(res.users);
         this.totalCount.set(res.totalCount);
-        this.totalPages.set(res.totalPages);
         this.loading.set(false);
       },
-      error: (err) => {
+      error: () => {
         this.error.set('Failed to load users. Please try again.');
         this.loading.set(false);
       },
     });
   }
 
-  onSearchChange(): void {
-    if (this.searchTimeout) clearTimeout(this.searchTimeout);
-    this.searchTimeout = setTimeout(() => {
-      this.currentPage.set(1);
-      this.loadUsers();
-    }, 300);
+  // DataTable event handlers
+  onPageChange(event: PageChangeEvent): void {
+    this.currentPage = event.page;
+    this.pageSize = event.pageSize;
+    this.loadUsers();
   }
 
-  sortBy(column: string): void {
-    if (this.currentSort() === column) {
-      this.currentSortDir.set(this.currentSortDir() === 'asc' ? 'desc' : 'asc');
+  onSortChange(sorts: SortState[]): void {
+    if (sorts.length > 0) {
+      this.currentSort = sorts[0].column;
+      this.currentSortDir = sorts[0].direction;
     } else {
-      this.currentSort.set(column);
-      this.currentSortDir.set('asc');
+      this.currentSort = 'createdAt';
+      this.currentSortDir = 'desc';
     }
     this.loadUsers();
   }
 
-  goToPage(page: number): void {
-    this.currentPage.set(page);
+  onFilterChange(filters: FilterState[]): void {
+    this.roleFilter = '';
+    this.statusFilter = '';
+    for (const f of filters) {
+      if (f.column === 'roles') this.roleFilter = f.value;
+      if (f.column === 'status') this.statusFilter = f.value;
+    }
+    this.currentPage = 1;
     this.loadUsers();
   }
 
-  // Selection
-  isSelected(id: string): boolean {
-    return this.selectedSet().has(id);
+  onSearch(term: string): void {
+    this.searchTerm = term;
+    this.currentPage = 1;
+    this.loadUsers();
   }
 
-  toggleUser(id: string): void {
-    const set = new Set(this.selectedSet());
-    if (set.has(id)) set.delete(id);
-    else set.add(id);
-    this.selectedSet.set(set);
+  onSelectionChange(selected: UserSummary[]): void {
+    this.selectedSet.set(selected);
   }
 
-  toggleSelectAll(): void {
-    if (this.allSelected()) {
-      this.selectedSet.set(new Set());
-    } else {
-      this.selectedSet.set(new Set(this.users().map(u => u.id)));
-    }
-  }
-
-  clearSelection(): void {
-    this.selectedSet.set(new Set());
+  onBulkAction(event: BulkActionEvent): void {
+    this.bulkConfirmation.set(event.action);
   }
 
   // Bulk Actions
-  showBulkConfirmation(action: string): void {
-    this.bulkConfirmation.set(action);
-  }
-
   cancelBulkAction(): void {
     this.bulkConfirmation.set(null);
   }
@@ -370,14 +269,15 @@ export class UserManagementComponent implements OnInit {
     const action = this.bulkConfirmation();
     if (!action) return;
 
+    const userIds = this.selectedUsers().map(u => u.id);
     this.usersService.bulkAction({
-      userIds: this.selectedUsers(),
+      userIds,
       action,
       roleName: action === 'role_change' ? this.bulkRoleName : undefined,
     }).subscribe({
-      next: (result: BulkActionResponse) => {
+      next: () => {
         this.bulkConfirmation.set(null);
-        this.clearSelection();
+        this.selectedSet.set([]);
         this.loadUsers();
       },
       error: () => {
@@ -386,19 +286,11 @@ export class UserManagementComponent implements OnInit {
     });
   }
 
-  // Quick Actions
-  suspendUser(id: string): void {
-    if (!confirm('Are you sure you want to suspend this user?')) return;
-    this.usersService.suspendUser(id).subscribe({
-      next: () => this.loadUsers(),
-    });
-  }
-
+  // Impersonation
   impersonateUser(id: string): void {
     this.usersService.impersonateUser(id).subscribe({
       next: (response) => {
         this.impersonation.set(response);
-        // Store impersonation token for session
         sessionStorage.setItem('impersonationToken', response.impersonationToken);
       },
     });
@@ -409,6 +301,7 @@ export class UserManagementComponent implements OnInit {
     sessionStorage.removeItem('impersonationToken');
   }
 
+  // Export
   exportUsers(): void {
     this.exporting.set(true);
     this.usersService.exportUsers({

@@ -2,8 +2,7 @@ import { inject } from '@angular/core';
 import { ActivatedRouteSnapshot, CanActivateFn, Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { map, take } from 'rxjs/operators';
-import { selectIsAuthenticated } from '../../store/auth/auth.selectors';
-import { selectUserRoleNames } from '../../store/roles/roles.selectors';
+import { selectIsAuthenticated, selectAuthRoles } from '../../store/auth/auth.selectors';
 import { combineLatest } from 'rxjs';
 
 export const roleGuard: CanActivateFn = (route: ActivatedRouteSnapshot) => {
@@ -13,7 +12,7 @@ export const roleGuard: CanActivateFn = (route: ActivatedRouteSnapshot) => {
 
   return combineLatest([
     store.select(selectIsAuthenticated),
-    store.select(selectUserRoleNames),
+    store.select(selectAuthRoles),
   ]).pipe(
     take(1),
     map(([isAuthenticated, userRoles]) => {

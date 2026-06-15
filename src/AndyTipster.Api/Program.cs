@@ -3,6 +3,7 @@ using AndyTipster.Api.Endpoints;
 using AndyTipster.Api.Middleware;
 using AndyTipster.Application;
 using AndyTipster.Infrastructure;
+using AndyTipster.Infrastructure.Data.Seeding;
 using Microsoft.AspNetCore.RateLimiting;
 using Serilog;
 using Serilog.Events;
@@ -270,6 +271,13 @@ try
     if (app.Environment.IsDevelopment())
     {
         app.MapOpenApi();
+    }
+
+    // Seed data in development
+    if (app.Environment.IsDevelopment())
+    {
+        await RoleSeeder.SeedAsync(app.Services);
+        await DemoSeeder.SeedAsync(app.Services);
     }
 
     app.Run();

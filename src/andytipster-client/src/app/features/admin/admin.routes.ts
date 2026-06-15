@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { roleGuard } from '../../core/guards/role.guard';
+import { permissionGuard } from '../../core/guards/permission.guard';
 
 export const ADMIN_ROUTES: Routes = [
   {
@@ -19,10 +20,14 @@ export const ADMIN_ROUTES: Routes = [
       {
         path: 'users',
         loadComponent: () => import('./pages/user-management/user-management.component').then(m => m.UserManagementComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['Users.View'] },
       },
       {
         path: 'plans',
         loadComponent: () => import('./pages/plan-management/plan-management.component').then(m => m.PlanManagementComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['Plans.View'] },
       },
       {
         path: 'tips',
@@ -47,11 +52,14 @@ export const ADMIN_ROUTES: Routes = [
       {
         path: 'paypal-dashboard',
         loadComponent: () => import('./pages/paypal-dashboard/paypal-dashboard.component').then(m => m.PayPalDashboardComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['Subscriptions.View'] },
       },
       {
         path: 'audit',
         loadComponent: () => import('./pages/audit-log/audit-log.component').then(m => m.AuditLogComponent),
-        data: { roles: ['Super Admin'] },
+        canActivate: [permissionGuard],
+        data: { permissions: ['Audit.View'] },
       },
       {
         path: 'blog',
@@ -60,6 +68,8 @@ export const ADMIN_ROUTES: Routes = [
       {
         path: 'notifications',
         loadComponent: () => import('./pages/notifications/admin-notifications.component').then(m => m.AdminNotificationsComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['Users.View'] },
       },
     ],
   },

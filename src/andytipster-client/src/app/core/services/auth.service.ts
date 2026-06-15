@@ -6,15 +6,15 @@ import { environment } from '../../../environments/environment';
 export interface LoginResponse {
   accessToken?: string;
   refreshToken?: string;
-  expiresAt?: number;
-  requires2FA: boolean;
+  expiresAt?: string;
+  requiresTwoFactor: boolean;
   twoFactorEmail?: string;
 }
 
 export interface TokenResponse {
   accessToken: string;
   refreshToken: string;
-  expiresAt: number;
+  expiresAt: string;
 }
 
 export interface RegisterResponse {
@@ -22,8 +22,8 @@ export interface RegisterResponse {
 }
 
 export interface Enable2FAResponse {
-  secret: string;
-  qrCodeUrl: string;
+  qrCodeUri: string;
+  manualEntryKey: string;
 }
 
 export interface MessageResponse {

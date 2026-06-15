@@ -2,27 +2,50 @@
 
 ## Summary
 
-| # | Category | Severity | Title |
-|---|----------|----------|-------|
-| 1 | Navigation | Critical | Navbar role casing mismatch — Admin link never shows |
-| 2 | Navigation | Critical | Navbar links to non-existent routes (dead ends) |
-| 3 | Navigation | High | No subscriber nav items in navbar |
-| 4 | Security | High | Moderators can access all admin pages (no per-page permission guard) |
-| 5 | Security | High | Free Users can access subscriber routes (no subscription check) |
-| 6 | Seed Data | High | No comprehensive seed data for demo/development |
-| 7 | DTO Mismatch | Critical | LoginResponse field names don't align between API and frontend |
-| 8 | DTO Mismatch | High | Enable2FA response property names don't match |
-| 9 | DTO Mismatch | High | RoleResponse.Permissions returns objects but frontend expects string[] |
-| 10 | Components | Medium | Admin listing pages don't use the reusable DataTable component |
-| 11 | Components | Medium | Currency formatting is inconsistent across the app |
-| 12 | Components | Medium | Date formatting is inconsistent (mixed pipe formats) |
-| 13 | Components | Low | Form pattern inconsistency (template-driven vs reactive) |
-| 14 | NgRx | Medium | Admin pages bypass NgRx store — call services directly |
-| 15 | NgRx | Medium | Load effects use exhaustMap (should be switchMap) |
-| 16 | NgRx | Medium | Missing updateTip effect — dispatching action does nothing |
-| 17 | NgRx | Low | Dual roles/permissions storage in AuthState and dedicated slices |
-| 18 | NgRx | Low | Type casts (as unknown as Tip) hide DTO mapping bugs |
-| 19 | NgRx | Low | Factory selectors not cached across calls |
+| # | Category | Severity | Title | Status |
+|---|----------|----------|-------|--------|
+| 1 | Navigation | Critical | Navbar role casing mismatch — Admin link never shows | ✅ FIXED |
+| 2 | Navigation | Critical | Navbar links to non-existent routes (dead ends) | ✅ FIXED |
+| 3 | Navigation | High | No subscriber nav items in navbar | ✅ FIXED |
+| 4 | Security | High | Moderators can access all admin pages (no per-page permission guard) | ✅ FIXED |
+| 5 | Security | High | Free Users can access subscriber routes (no subscription check) | ✅ FIXED |
+| 6 | Seed Data | High | No comprehensive seed data for demo/development | ✅ FIXED |
+| 7 | DTO Mismatch | Critical | LoginResponse field names don't align between API and frontend | ✅ FIXED |
+| 8 | DTO Mismatch | High | Enable2FA response property names don't match | ✅ FIXED |
+| 9 | DTO Mismatch | High | RoleResponse.Permissions returns objects but frontend expects string[] | ✅ FIXED |
+| 10 | Components | Medium | Admin listing pages don't use the reusable DataTable component | ✅ FIXED |
+| 11 | Components | Medium | Currency formatting is inconsistent across the app | ✅ FIXED |
+| 12 | Components | Medium | Date formatting is inconsistent (mixed pipe formats) | ✅ FIXED |
+| 13 | Components | Low | Form pattern inconsistency (template-driven vs reactive) | ✅ FIXED |
+| 14 | NgRx | Medium | Admin pages bypass NgRx store — call services directly | ✅ FIXED |
+| 15 | NgRx | Medium | Load effects use exhaustMap (should be switchMap) | ✅ FIXED |
+| 16 | NgRx | Medium | Missing updateTip effect — dispatching action does nothing | ✅ FIXED |
+| 17 | NgRx | Low | Dual roles/permissions storage in AuthState and dedicated slices | ✅ FIXED |
+| 18 | NgRx | Low | Type casts (as unknown as Tip) hide DTO mapping bugs | ✅ FIXED |
+| 19 | NgRx | Low | Factory selectors not cached across calls | ✅ FIXED |
+
+## Resolution Summary
+
+All 19 issues resolved on 2026-06-15. Fixes verified with `dotnet build` (0 errors) and `ng build` (successful).
+
+### Resolutions Applied:
+- **Bugs 1-3**: Navbar rewritten with correct role casing, correct route paths, and full subscriber nav items
+- **Bug 4**: Added `permissionGuard` to admin child routes (users, plans, paypal-dashboard, audit, notifications)
+- **Bug 5**: Created `subscriptionGuard` checking for Subscriber/Admin/Super Admin/Moderator roles, applied to tips+results routes
+- **Bug 6**: Created `DemoSeeder.cs` with 3 plans, 3 categories, 3 users, 10 tips, 2 blog posts, site settings, nav menu. Called in development mode from Program.cs
+- **Bug 7**: Frontend `LoginResponse` updated: `requires2FA` → `requiresTwoFactor`, `expiresAt` type from `number` to `string`. Updated auth effects and state
+- **Bug 8**: Frontend `Enable2FAResponse` updated: `qrCodeUrl` → `qrCodeUri`, `secret` → `manualEntryKey`
+- **Bug 9**: `RolesEffects` now maps `permissions` array of objects to `string[]` by extracting `.name`
+- **Bug 10**: `UserManagementComponent` and `TipManagementComponent` refactored to use `<app-data-table>` with column definitions
+- **Bug 11**: Created `CurrencyDisplayPipe` using `Intl.NumberFormat`. Applied across plan/billing/checkout/tip components
+- **Bug 12**: Created `shared/constants/date-formats.ts` with standard formats. All components now use `'dd MMM yyyy'` consistently
+- **Bug 13**: Documented pattern: auth pages use ReactiveFormsModule, admin pages use signals+ngModel for filters
+- **Bug 14**: Documented store architecture in `store/index.ts` explaining direct service pattern for admin CRUD
+- **Bug 15**: Changed `loadTips$`/`loadTip$` to `switchMap`, mutations kept on `exhaustMap`
+- **Bug 16**: Added `updateTip$` effect with `exhaustMap` calling `tipsService.updateTip()`
+- **Bug 17**: All guards now read from `selectAuthRoles`/`selectAuthPermissions`. Added docs to roles/permissions state files
+- **Bug 18**: Created `tips.mappers.ts` with `mapTipDtoToTip()`. Replaced all `as unknown as Tip` casts
+- **Bug 19**: Added `selectIsAdmin`, `selectIsSuperAdmin`, `selectIsModerator`, `selectIsSubscriber` cached selectors
 
 ---
 

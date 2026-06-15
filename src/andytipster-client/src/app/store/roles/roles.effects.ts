@@ -16,6 +16,10 @@ export class RolesEffects {
       ofType(RolesActions.loadRoles),
       exhaustMap(() =>
         this.rolesService.getRoles().pipe(
+          map((roles) => roles.map(role => ({
+            ...role,
+            permissions: role.permissions.map((p: any) => p.name)
+          }))),
           map((roles) => RolesActions.loadRolesSuccess({ roles })),
           catchError((error) =>
             of(RolesActions.loadRolesFailure({ error: error.message ?? 'Failed to load roles' }))

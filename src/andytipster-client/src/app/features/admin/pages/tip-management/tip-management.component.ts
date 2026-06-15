@@ -1,3 +1,10 @@
+/**
+ * TipManagementComponent
+ *
+ * Pattern: Admin pages use signals + ngModel for simple filter/search bindings.
+ * Auth pages use ReactiveFormsModule for complex forms with validation.
+ * The DataTable component handles search, sort, filter, and pagination via its outputs.
+ */
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -10,44 +17,29 @@ import {
   TipFilterDto,
   PnLSummaryDto
 } from '../../../../core/services/tips.service';
+import {
+  DataTableComponent,
+  DataTableColumn,
+  PageChangeEvent,
+  SortState,
+  FilterState,
+} from '../../../../shared/components/data-table/index';
+import { CurrencyDisplayPipe } from '../../../../shared/pipes/currency-display.pipe';
 
 @Component({
   selector: 'app-tip-management',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, DataTableComponent, CurrencyDisplayPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <section class="p-6 space-y-6">
       <div class="flex items-center justify-between">
         <h1 class="text-2xl font-bold">Tip Management</h1>
         <div class="flex gap-2">
+          <button class="btn btn-outline btn-sm" (click)="loadPnL()">View P&L</button>
           <button class="btn btn-outline btn-sm" (click)="showImportModal = true">CSV Import</button>
           <button class="btn btn-primary btn-sm" (click)="openCreateForm()">Create Tip</button>
         </div>
-      </div>
-
-      <!-- Filters -->
-      <div class="flex flex-wrap gap-3 items-end">
-        <select class="select select-bordered select-sm" [(ngModel)]="filter.status" (change)="loadTips()">
-          <option value="">All Statuses</option>
-          <option value="Draft">Draft</option>
-          <option value="Published">Published</option>
-          <option value="Archived">Archived</option>
-        </select>
-        <select class="select select-bordered select-sm" [(ngModel)]="filter.categoryId" (change)="loadTips()">
-          <option value="">All Categories</option>
-          @for (cat of categories(); track cat.id) {
-            <option [value]="cat.id">{{ cat.name }}</option>
-          }
-        </select>
-        <select class="select select-bordered select-sm" [(ngModel)]="filter.result" (change)="loadTips()">
-          <option value="">All Results</option>
-          <option value="Won">Won</option>
-          <option value="Lost">Lost</option>
-          <option value="Void">Void</option>
-          <option value="Push">Push</option>
-        </select>
-        <button class="btn btn-ghost btn-sm" (click)="loadPnL()">View P&L</button>
       </div>
 
       <!-- P&L Summary -->
@@ -57,7 +49,7 @@ import {
             <div class="stat-title">Total P&L</div>
             <div class="stat-value" [class.text-success]="pnlSummary()!.totalProfitLoss > 0"
                  [class.text-error]="pnlSummary()!.totalProfitLoss < 0">
-              {{ pnlSummary()!.totalProfitLoss | number:'1.2-2' }}
+              {{ pnlSummary()!.totalProfitLoss | currencyDisplay }}
             </div>
           </div>
           <div class="stat">
@@ -75,82 +67,21 @@ import {
         </div>
       }
 
-      <!-- Tips Table -->
-      <div class="overflow-x-auto">
-        <table class="table table-zebra w-full">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Race</th>
-              <th>Selection</th>
-              <th>Odds</th>
-              <th>Stake</th>
-              <th>Category</th>
-              <th>Status</th>
-              <th>Result</th>
-              <th>P&L</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (tip of tips(); track tip.id) {
-              <tr>
-                <td>{{ tip.eventDate | date:'shortDate' }}</td>
-                <td>{{ tip.raceName }}</td>
-                <td>{{ tip.selection }}</td>
-                <td>{{ tip.odds }}</td>
-                <td>{{ tip.stake }}</td>
-                <td>{{ tip.categoryName }}</td>
-                <td>
-                  <span class="badge" [class.badge-ghost]="tip.status === 'Draft'"
-                        [class.badge-success]="tip.status === 'Published'"
-                        [class.badge-neutral]="tip.status === 'Archived'">
-                    {{ tip.status }}
-                  </span>
-                </td>
-                <td>
-                  @if (tip.result) {
-                    <span class="badge" [class.badge-success]="tip.result === 'Won'"
-                          [class.badge-error]="tip.result === 'Lost'"
-                          [class.badge-warning]="tip.result === 'Void' || tip.result === 'Push'">
-                      {{ tip.result }}
-                    </span>
-                  }
-                </td>
-                <td [class.text-success]="(tip.profitLoss ?? 0) > 0"
-                    [class.text-error]="(tip.profitLoss ?? 0) < 0">
-                  {{ tip.profitLoss != null ? (tip.profitLoss | number:'1.2-2') : '-' }}
-                </td>
-                <td>
-                  <div class="flex gap-1">
-                    @if (tip.status === 'Draft') {
-                      <button class="btn btn-xs btn-success" (click)="publishTip(tip.id)">Publish</button>
-                      <button class="btn btn-xs btn-ghost" (click)="deleteTip(tip.id)">Delete</button>
-                    }
-                    @if (tip.status === 'Published' && !tip.result) {
-                      <button class="btn btn-xs btn-info" (click)="openResultModal(tip)">Record Result</button>
-                      <button class="btn btn-xs btn-neutral" (click)="archiveTip(tip.id)">Archive</button>
-                    }
-                    @if (tip.status === 'Published' && tip.result) {
-                      <button class="btn btn-xs btn-neutral" (click)="archiveTip(tip.id)">Archive</button>
-                    }
-                  </div>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Pagination -->
-      <div class="flex justify-between items-center">
-        <span class="text-sm opacity-70">Total: {{ totalCount() }}</span>
-        <div class="join">
-          <button class="join-item btn btn-sm" [disabled]="filter.page === 1" (click)="filter.page = filter.page! - 1; loadTips()">«</button>
-          <button class="join-item btn btn-sm">Page {{ filter.page }}</button>
-          <button class="join-item btn btn-sm" [disabled]="tips().length < filter.pageSize!" (click)="filter.page = filter.page! + 1; loadTips()">»</button>
-        </div>
-      </div>
+      <!-- Data Table -->
+      <app-data-table
+        [columns]="columns"
+        [data]="tips()"
+        [loading]="loading()"
+        [totalCount]="totalCount()"
+        [pageSize]="25"
+        [selectable]="false"
+        [exportable]="true"
+        (pageChange)="onPageChange($event)"
+        (sortChange)="onSortChange($event)"
+        (filterChange)="onFilterChange($event)"
+        (search)="onSearch($event)"
+        (retry)="loadTips()"
+      />
 
       <!-- Create/Edit Modal -->
       @if (showCreateForm) {
@@ -248,6 +179,7 @@ export class TipManagementComponent implements OnInit {
 
   tips = signal<TipDto[]>([]);
   totalCount = signal(0);
+  loading = signal(false);
   categories = signal<CategoryDto[]>([]);
   pnlSummary = signal<PnLSummaryDto | null>(null);
   formError = signal<string | null>(null);
@@ -262,23 +194,102 @@ export class TipManagementComponent implements OnInit {
 
   newTip: CreateTipDto = { eventDate: '', raceName: '', selection: '', odds: 0, stake: 1, categoryId: '' };
 
+  // Table column definitions
+  columns: DataTableColumn<TipDto>[] = [
+    {
+      field: 'raceName',
+      header: 'Race Name',
+      sortable: true,
+      filterable: true,
+      filterType: 'text',
+    },
+    {
+      field: 'selection',
+      header: 'Selection',
+      filterable: true,
+      filterType: 'text',
+    },
+    {
+      field: 'odds',
+      header: 'Odds',
+    },
+    {
+      field: 'stake',
+      header: 'Stake',
+    },
+    {
+      field: 'categoryName',
+      header: 'Category',
+      filterable: true,
+      filterType: 'dropdown',
+      filterOptions: [], // populated in ngOnInit
+    },
+    {
+      field: 'status',
+      header: 'Status',
+      filterable: true,
+      filterType: 'dropdown',
+      filterOptions: [
+        { label: 'Draft', value: 'Draft' },
+        { label: 'Published', value: 'Published' },
+        { label: 'Archived', value: 'Archived' },
+      ],
+    },
+    {
+      field: 'result',
+      header: 'Result',
+      filterable: true,
+      filterType: 'dropdown',
+      filterOptions: [
+        { label: 'Won', value: 'Won' },
+        { label: 'Lost', value: 'Lost' },
+        { label: 'Void', value: 'Void' },
+        { label: 'Push', value: 'Push' },
+      ],
+      render: (row) => row.result ?? '',
+    },
+    {
+      field: 'profitLoss',
+      header: 'P&L',
+      render: (row) => row.profitLoss != null ? row.profitLoss.toFixed(2) : '-',
+    },
+    {
+      field: 'eventDate',
+      header: 'Event Date',
+      sortable: true,
+      render: (row) => row.eventDate ? new Date(row.eventDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '',
+    },
+  ];
+
   ngOnInit(): void {
     this.loadTips();
     this.loadCategories();
   }
 
   loadTips(): void {
+    this.loading.set(true);
     this.tipsService.getTips(this.filter).subscribe({
       next: (res) => {
         this.tips.set(res.items);
         this.totalCount.set(res.totalCount);
+        this.loading.set(false);
+      },
+      error: () => {
+        this.loading.set(false);
       }
     });
   }
 
   loadCategories(): void {
     this.tipsService.getCategories(true).subscribe({
-      next: (cats) => this.categories.set(cats)
+      next: (cats) => {
+        this.categories.set(cats);
+        // Update category column filter options
+        const catColumn = this.columns.find(c => c.field === 'categoryName');
+        if (catColumn) {
+          catColumn.filterOptions = cats.map(c => ({ label: c.name, value: c.id }));
+        }
+      }
     });
   }
 
@@ -286,6 +297,37 @@ export class TipManagementComponent implements OnInit {
     this.tipsService.getPnLSummary(undefined, undefined, this.filter.categoryId || undefined).subscribe({
       next: (summary) => this.pnlSummary.set(summary)
     });
+  }
+
+  // DataTable event handlers
+  onPageChange(event: PageChangeEvent): void {
+    this.filter.page = event.page;
+    this.filter.pageSize = event.pageSize;
+    this.loadTips();
+  }
+
+  onSortChange(sorts: SortState[]): void {
+    // Backend sorts handled via filter - extend if API supports sortBy param
+    this.loadTips();
+  }
+
+  onFilterChange(filters: FilterState[]): void {
+    this.filter.status = '';
+    this.filter.categoryId = '';
+    this.filter.result = '';
+    for (const f of filters) {
+      if (f.column === 'status') this.filter.status = f.value;
+      if (f.column === 'categoryName') this.filter.categoryId = f.value;
+      if (f.column === 'result') this.filter.result = f.value;
+    }
+    this.filter.page = 1;
+    this.loadTips();
+  }
+
+  onSearch(term: string): void {
+    // Search is handled via filters if API supports it
+    this.filter.page = 1;
+    this.loadTips();
   }
 
   openCreateForm(): void {
