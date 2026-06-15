@@ -18,6 +18,27 @@ export const selectIsAuthenticated = createSelector(
   (state) => state.isAuthenticated
 );
 
+export const selectAuthUser = createSelector(
+  selectAuthState,
+  (state) => state.user
+);
+
+export const selectAuthRoles = createSelector(
+  selectAuthState,
+  (state) => state.roles
+);
+
+export const selectAuthPermissions = createSelector(
+  selectAuthState,
+  (state) => state.permissions
+);
+
+export const selectHasRole = (role: string) =>
+  createSelector(selectAuthRoles, (roles) => roles.includes(role));
+
+export const selectHasPermission = (permission: string) =>
+  createSelector(selectAuthPermissions, (permissions) => permissions.includes(permission));
+
 export const selectAuthIsLoading = createSelector(
   selectAuthState,
   (state) => state.isLoading
@@ -31,6 +52,11 @@ export const selectAuthError = createSelector(
 export const selectRequires2FA = createSelector(
   selectAuthState,
   (state) => state.requires2FA
+);
+
+export const selectTwoFactorEmail = createSelector(
+  selectAuthState,
+  (state) => state.twoFactorEmail
 );
 
 export const selectTokenExpiresAt = createSelector(

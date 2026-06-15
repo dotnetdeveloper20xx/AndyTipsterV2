@@ -4,7 +4,7 @@ namespace AndyTipster.Application.Auth.Services;
 
 /// <summary>
 /// Service interface for authentication operations including registration, email verification,
-/// login, token refresh, and password reset.
+/// login, token refresh, password reset, and two-factor authentication.
 /// </summary>
 public interface IAuthService
 {
@@ -17,6 +17,14 @@ public interface IAuthService
     Task<AuthResult> LogoutAsync(string refreshToken, string? ipAddress = null, CancellationToken cancellationToken = default);
     Task<AuthResult> RequestPasswordResetAsync(PasswordResetRequest request, CancellationToken cancellationToken = default);
     Task<AuthResult> ResetPasswordAsync(ResetPasswordRequest request, CancellationToken cancellationToken = default);
+    Task<AuthResult<LoginResponse>> SocialLoginAsync(SocialLoginRequest request, string? ipAddress = null, CancellationToken cancellationToken = default);
+
+    // Two-Factor Authentication
+    Task<AuthResult<Enable2FAResponse>> Enable2FAAsync(string userId, CancellationToken cancellationToken = default);
+    Task<AuthResult<RecoveryCodesResponse>> Confirm2FASetupAsync(string userId, string code, CancellationToken cancellationToken = default);
+    Task<AuthResult<LoginResponse>> Verify2FALoginAsync(string email, string code, string? ipAddress = null, CancellationToken cancellationToken = default);
+    Task<AuthResult<LoginResponse>> VerifyRecoveryCodeAsync(string email, string recoveryCode, string? ipAddress = null, CancellationToken cancellationToken = default);
+    Task<AuthResult> Disable2FAAsync(string userId, string password, CancellationToken cancellationToken = default);
 }
 
 /// <summary>

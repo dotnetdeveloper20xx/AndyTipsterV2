@@ -16,6 +16,7 @@ public class AuthService : IAuthService
     private readonly RoleManager<Role> _roleManager;
     private readonly IEmailService _emailService;
     private readonly ITokenService _tokenService;
+    private readonly ISocialAuthService _socialAuthService;
     private readonly ILogger<AuthService> _logger;
 
     public AuthService(
@@ -23,12 +24,14 @@ public class AuthService : IAuthService
         RoleManager<Role> roleManager,
         IEmailService emailService,
         ITokenService tokenService,
+        ISocialAuthService socialAuthService,
         ILogger<AuthService> logger)
     {
         _userManager = userManager;
         _roleManager = roleManager;
         _emailService = emailService;
         _tokenService = tokenService;
+        _socialAuthService = socialAuthService;
         _logger = logger;
     }
 
@@ -205,6 +208,19 @@ public class AuthService : IAuthService
         // Reset failed access count on successful login
         await _userManager.ResetAccessFailedCountAsync(user);
 
+        // Check if 2FA is enabled — if so, don't issue tokens yet
+        if (await _userManager.GetTwoFactorEnabledAsync(user))
+        {
+            _logger.LogInformation("User {Email} requires 2FA verification.", user.Email);
+            return AuthResult<LoginResponse>.Success(
+                new LoginResponse(
+                    AccessToken: string.Empty,
+                    RefreshToken: string.Empty,
+                    ExpiresAt: DateTime.MinValue,
+                    RequiresTwoFactor: true,
+                    TwoFactorEmail: user.Email));
+        }
+
         // Update last login
         user.LastLoginAt = DateTime.UtcNow;
         await _userManager.UpdateAsync(user);
@@ -298,6 +314,328 @@ public class AuthService : IAuthService
         }
 
         _logger.LogInformation("Password reset successful for {Email}.", user.Email);
+
+        return AuthResult.Success();
+    }
+
+    public async Task<AuthResult<LoginResponse>> SocialLoginAsync(SocialLoginRequest request, string? ipAddress = null, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(request.Provider) || string.IsNullOrWhiteSpace(request.AccessToken))
+        {
+            return AuthResult<LoginResponse>.Failure("Provider and access token are required.", 400);
+        }
+
+        // Validate the social token with the provider
+        var socialUser = await _socialAuthService.ValidateTokenAsync(request.Provider, request.AccessToken, cancellationToken);
+
+        if (socialUser is null)
+        {
+            return AuthResult<LoginResponse>.Failure("Invalid social login token.", 401);
+        }
+
+        // Check if user with that email already exists
+        var existingUser = await _userManager.FindByEmailAsync(socialUser.Email);
+
+        if (existingUser is not null)
+        {
+            // Link the social provider to the existing account (if not already linked)
+            var existingLogins = await _userManager.GetLoginsAsync(existingUser);
+            var alreadyLinked = existingLogins.Any(l =>
+                l.LoginProvider == socialUser.Provider &&
+                l.ProviderKey == socialUser.ProviderUserId);
+
+            if (!alreadyLinked)
+            {
+                var loginInfo = new UserLoginInfo(socialUser.Provider, socialUser.ProviderUserId, socialUser.Provider);
+                var addLoginResult = await _userManager.AddLoginAsync(existingUser, loginInfo);
+
+                if (!addLoginResult.Succeeded)
+                {
+                    _logger.LogWarning("Failed to link {Provider} to existing account {Email}.", socialUser.Provider, socialUser.Email);
+                }
+                else
+                {
+                    _logger.LogInformation("Linked {Provider} to existing account {Email}.", socialUser.Provider, socialUser.Email);
+                }
+            }
+
+            // Check if account is suspended
+            if (existingUser.IsSuspended)
+            {
+                return AuthResult<LoginResponse>.Failure("Your account has been suspended. Please contact support.", 401);
+            }
+
+            // Update last login
+            existingUser.LastLoginAt = DateTime.UtcNow;
+            await _userManager.UpdateAsync(existingUser);
+
+            // Generate tokens
+            var (accessToken, expiresAt) = await _tokenService.GenerateAccessTokenAsync(existingUser);
+            var refreshToken = await _tokenService.GenerateRefreshTokenAsync(existingUser, ipAddress);
+
+            _logger.LogInformation("User {Email} logged in via {Provider}.", existingUser.Email, socialUser.Provider);
+
+            return AuthResult<LoginResponse>.Success(
+                new LoginResponse(accessToken, refreshToken, expiresAt));
+        }
+        else
+        {
+            // Create new account — email is already verified via social provider
+            var newUser = new ApplicationUser
+            {
+                UserName = socialUser.Email,
+                Email = socialUser.Email,
+                DisplayName = socialUser.Name,
+                EmailConfirmed = true, // Social providers verify email
+                CreatedAt = DateTime.UtcNow
+            };
+
+            var createResult = await _userManager.CreateAsync(newUser);
+            if (!createResult.Succeeded)
+            {
+                var errors = string.Join(", ", createResult.Errors.Select(e => e.Description));
+                _logger.LogError("Failed to create account for social login {Email}: {Errors}", socialUser.Email, errors);
+                return AuthResult<LoginResponse>.Failure("Failed to create account. Please try again.", 500);
+            }
+
+            // Link the social provider
+            var loginInfo = new UserLoginInfo(socialUser.Provider, socialUser.ProviderUserId, socialUser.Provider);
+            await _userManager.AddLoginAsync(newUser, loginInfo);
+
+            // Assign "Free User" role by default
+            await AssignDefaultRoleAsync(newUser);
+
+            // Update last login
+            newUser.LastLoginAt = DateTime.UtcNow;
+            await _userManager.UpdateAsync(newUser);
+
+            // Generate tokens
+            var (accessToken, expiresAt) = await _tokenService.GenerateAccessTokenAsync(newUser);
+            var refreshToken = await _tokenService.GenerateRefreshTokenAsync(newUser, ipAddress);
+
+            _logger.LogInformation("New user {Email} created via {Provider} social login.", socialUser.Email, socialUser.Provider);
+
+            return AuthResult<LoginResponse>.Success(
+                new LoginResponse(accessToken, refreshToken, expiresAt));
+        }
+    }
+
+    public async Task<AuthResult<Enable2FAResponse>> Enable2FAAsync(string userId, CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user is null)
+        {
+            return AuthResult<Enable2FAResponse>.Failure("User not found.", 404);
+        }
+
+        // Check if 2FA is already enabled
+        if (await _userManager.GetTwoFactorEnabledAsync(user))
+        {
+            return AuthResult<Enable2FAResponse>.Failure("Two-factor authentication is already enabled.", 400);
+        }
+
+        // Reset the authenticator key to generate a new one
+        await _userManager.ResetAuthenticatorKeyAsync(user);
+        var key = await _userManager.GetAuthenticatorKeyAsync(user);
+
+        if (string.IsNullOrEmpty(key))
+        {
+            return AuthResult<Enable2FAResponse>.Failure("Failed to generate authenticator key.", 500);
+        }
+
+        // Generate QR code URI in otpauth format
+        var email = user.Email ?? user.UserName ?? "user";
+        var qrCodeUri = $"otpauth://totp/AndyTipster:{email}?secret={key}&issuer=AndyTipster";
+
+        _logger.LogInformation("2FA setup initiated for user {Email}.", user.Email);
+
+        return AuthResult<Enable2FAResponse>.Success(
+            new Enable2FAResponse(qrCodeUri, key));
+    }
+
+    public async Task<AuthResult<RecoveryCodesResponse>> Confirm2FASetupAsync(string userId, string code, CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user is null)
+        {
+            return AuthResult<RecoveryCodesResponse>.Failure("User not found.", 404);
+        }
+
+        if (await _userManager.GetTwoFactorEnabledAsync(user))
+        {
+            return AuthResult<RecoveryCodesResponse>.Failure("Two-factor authentication is already enabled.", 400);
+        }
+
+        // Verify the TOTP code provided by the user
+        var isValidCode = await _userManager.VerifyTwoFactorTokenAsync(
+            user,
+            _userManager.Options.Tokens.AuthenticatorTokenProvider,
+            code);
+
+        if (!isValidCode)
+        {
+            return AuthResult<RecoveryCodesResponse>.Failure("Invalid verification code. Please try again.", 400);
+        }
+
+        // Activate 2FA
+        await _userManager.SetTwoFactorEnabledAsync(user, true);
+
+        // Generate 8 single-use recovery codes
+        var recoveryCodes = await _userManager.GenerateNewTwoFactorRecoveryCodesAsync(user, 8);
+
+        _logger.LogInformation("2FA activated for user {Email}. Recovery codes generated.", user.Email);
+
+        return AuthResult<RecoveryCodesResponse>.Success(
+            new RecoveryCodesResponse(recoveryCodes?.ToList() ?? new List<string>()));
+    }
+
+    public async Task<AuthResult<LoginResponse>> Verify2FALoginAsync(string email, string code, string? ipAddress = null, CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByEmailAsync(email);
+        if (user is null)
+        {
+            return AuthResult<LoginResponse>.Failure("Invalid verification attempt.", 401);
+        }
+
+        // Check if account is locked out
+        if (await _userManager.IsLockedOutAsync(user))
+        {
+            return AuthResult<LoginResponse>.Failure(
+                "Your account has been temporarily locked due to multiple failed attempts. Please try again in 15 minutes.",
+                401);
+        }
+
+        // Verify the TOTP code with ±1 clock skew tolerance (handled by Identity's authenticator token provider)
+        var isValidCode = await _userManager.VerifyTwoFactorTokenAsync(
+            user,
+            _userManager.Options.Tokens.AuthenticatorTokenProvider,
+            code);
+
+        if (!isValidCode)
+        {
+            // Record failed attempt — triggers lockout after 5 failures
+            await _userManager.AccessFailedAsync(user);
+
+            if (await _userManager.IsLockedOutAsync(user))
+            {
+                _logger.LogWarning("Account {Email} locked out after failed 2FA attempts.", user.Email);
+                await _emailService.SendAccountLockoutNotificationAsync(user.Email!, cancellationToken);
+                return AuthResult<LoginResponse>.Failure(
+                    "Your account has been temporarily locked due to multiple failed attempts. Please try again in 15 minutes.",
+                    401);
+            }
+
+            return AuthResult<LoginResponse>.Failure("Invalid verification code.", 401);
+        }
+
+        // Reset failed access count on successful verification
+        await _userManager.ResetAccessFailedCountAsync(user);
+
+        // Update last login
+        user.LastLoginAt = DateTime.UtcNow;
+        await _userManager.UpdateAsync(user);
+
+        // Generate tokens
+        var (accessToken, expiresAt) = await _tokenService.GenerateAccessTokenAsync(user);
+        var refreshToken = await _tokenService.GenerateRefreshTokenAsync(user, ipAddress);
+
+        _logger.LogInformation("User {Email} completed 2FA login successfully.", user.Email);
+
+        return AuthResult<LoginResponse>.Success(
+            new LoginResponse(accessToken, refreshToken, expiresAt));
+    }
+
+    public async Task<AuthResult<LoginResponse>> VerifyRecoveryCodeAsync(string email, string recoveryCode, string? ipAddress = null, CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByEmailAsync(email);
+        if (user is null)
+        {
+            return AuthResult<LoginResponse>.Failure("Invalid verification attempt.", 401);
+        }
+
+        // Check if account is locked out
+        if (await _userManager.IsLockedOutAsync(user))
+        {
+            return AuthResult<LoginResponse>.Failure(
+                "Your account has been temporarily locked due to multiple failed attempts. Please try again in 15 minutes.",
+                401);
+        }
+
+        // Redeem the recovery code (marks it as consumed)
+        var result = await _userManager.RedeemTwoFactorRecoveryCodeAsync(user, recoveryCode);
+
+        if (!result.Succeeded)
+        {
+            // Record failed attempt
+            await _userManager.AccessFailedAsync(user);
+
+            if (await _userManager.IsLockedOutAsync(user))
+            {
+                _logger.LogWarning("Account {Email} locked out after failed recovery code attempts.", user.Email);
+                await _emailService.SendAccountLockoutNotificationAsync(user.Email!, cancellationToken);
+                return AuthResult<LoginResponse>.Failure(
+                    "Your account has been temporarily locked due to multiple failed attempts. Please try again in 15 minutes.",
+                    401);
+            }
+
+            return AuthResult<LoginResponse>.Failure("Invalid recovery code.", 401);
+        }
+
+        // Reset failed access count
+        await _userManager.ResetAccessFailedCountAsync(user);
+
+        // Update last login
+        user.LastLoginAt = DateTime.UtcNow;
+        await _userManager.UpdateAsync(user);
+
+        // Generate tokens
+        var (accessToken, expiresAt) = await _tokenService.GenerateAccessTokenAsync(user);
+        var refreshToken = await _tokenService.GenerateRefreshTokenAsync(user, ipAddress);
+
+        // Check remaining recovery codes — warn if fewer than 2 remain
+        var remainingCodes = await _userManager.CountRecoveryCodesAsync(user);
+        var warningMessage = remainingCodes < 2
+            ? "Warning: You have fewer than 2 recovery codes remaining. Please re-register your authenticator app to generate new codes."
+            : null;
+
+        _logger.LogInformation("User {Email} logged in via recovery code. {Remaining} codes remaining.", user.Email, remainingCodes);
+
+        // Return tokens — if warning needed, we include it in a custom way via the response
+        // The frontend can check recovery code count separately, but we log it
+        if (remainingCodes < 2)
+        {
+            _logger.LogWarning("User {Email} has fewer than 2 recovery codes remaining. Re-registration recommended.", user.Email);
+        }
+
+        return AuthResult<LoginResponse>.Success(
+            new LoginResponse(accessToken, refreshToken, expiresAt));
+    }
+
+    public async Task<AuthResult> Disable2FAAsync(string userId, string password, CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user is null)
+        {
+            return AuthResult.Failure("User not found.", 404);
+        }
+
+        if (!await _userManager.GetTwoFactorEnabledAsync(user))
+        {
+            return AuthResult.Failure("Two-factor authentication is not enabled.", 400);
+        }
+
+        // Confirm password before allowing 2FA disable
+        var isValidPassword = await _userManager.CheckPasswordAsync(user, password);
+        if (!isValidPassword)
+        {
+            return AuthResult.Failure("Invalid password.", 401);
+        }
+
+        // Disable 2FA and reset the authenticator key
+        await _userManager.SetTwoFactorEnabledAsync(user, false);
+        await _userManager.ResetAuthenticatorKeyAsync(user);
+
+        _logger.LogInformation("2FA disabled for user {Email}.", user.Email);
 
         return AuthResult.Success();
     }

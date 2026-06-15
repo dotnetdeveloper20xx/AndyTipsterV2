@@ -1,6 +1,8 @@
 using System.Text;
+using AndyTipster.Application.Audit.Services;
 using AndyTipster.Application.Auth.Services;
 using AndyTipster.Application.Roles.Services;
+using AndyTipster.Application.Users.Services;
 using AndyTipster.Domain.Entities;
 using AndyTipster.Infrastructure.Authorization;
 using AndyTipster.Infrastructure.Configuration;
@@ -65,7 +67,8 @@ public static class DependencyInjection
             .AddRoles<Role>()
             .AddEntityFrameworkStores<AndyTipsterDbContext>()
             .AddTokenProvider<DataProtectorTokenProvider<ApplicationUser>>(TokenOptions.DefaultProvider)
-            .AddTokenProvider<EmailTokenProvider<ApplicationUser>>(TokenOptions.DefaultEmailProvider);
+            .AddTokenProvider<EmailTokenProvider<ApplicationUser>>(TokenOptions.DefaultEmailProvider)
+            .AddTokenProvider<AuthenticatorTokenProvider<ApplicationUser>>(TokenOptions.DefaultAuthenticatorProvider);
 
         // Configure token lifespan to 24 hours for email confirmation tokens
         services.Configure<DataProtectionTokenProviderOptions>(TokenOptions.DefaultEmailProvider, options =>
@@ -149,6 +152,15 @@ public static class DependencyInjection
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IRoleService, RoleService>();
+        services.AddScoped<ISocialAuthService, SocialAuthService>();
+        services.AddScoped<IAuditService, AuditService>();
+        services.AddScoped<IUserManagementService, UserManagementService>();
+
+        // Register HttpClientFactory for social auth provider calls
+        services.AddHttpClient("SocialAuth", client =>
+        {
+            client.Timeout = TimeSpan.FromSeconds(10);
+        });
 
         // Register permission-based authorization handler
         services.AddSingleton<IAuthorizationHandler, PermissionHandler>();

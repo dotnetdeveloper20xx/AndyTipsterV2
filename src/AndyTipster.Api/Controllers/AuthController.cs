@@ -1,7 +1,9 @@
 using AndyTipster.Application.Auth.DTOs;
 using AndyTipster.Application.Auth.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using System.Security.Claims;
 
 namespace AndyTipster.Api.Controllers;
 
@@ -212,6 +214,39 @@ public class AuthController : ControllerBase
     }
 
     /// <summary>
+    /// Authenticate via social provider (Google, Facebook, Apple). Creates or links account based on email match.
+    /// </summary>
+    [HttpPost("social-login")]
+    [ProducesResponseType(typeof(LoginResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> SocialLogin([FromBody] SocialLoginRequest request, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(request.Provider) || string.IsNullOrWhiteSpace(request.AccessToken))
+        {
+            return Problem(
+                type: "https://andytipster.com/errors/validation-failed",
+                title: "Validation Failed",
+                detail: "Provider and access token are required.",
+                statusCode: StatusCodes.Status400BadRequest);
+        }
+
+        var ipAddress = GetClientIpAddress();
+        var result = await _authService.SocialLoginAsync(request, ipAddress, cancellationToken);
+
+        if (!result.Succeeded)
+        {
+            return Problem(
+                type: "https://andytipster.com/errors/social-login-failed",
+                title: "Social Login Failed",
+                detail: result.ErrorMessage,
+                statusCode: result.StatusCode);
+        }
+
+        return Ok(result.Data);
+    }
+
+    /// <summary>
     /// Request a password reset email. Always returns success to prevent email enumeration.
     /// </summary>
     [HttpPost("forgot-password")]
@@ -262,6 +297,188 @@ public class AuthController : ControllerBase
         }
 
         return Ok(new { message = "Password has been reset successfully. You can now log in with your new password." });
+    }
+
+    /// <summary>
+    /// Initiate 2FA setup. Returns QR code URI and manual entry key.
+    /// </summary>
+    [Authorize]
+    [HttpPost("2fa/enable")]
+    [ProducesResponseType(typeof(Enable2FAResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Enable2FA(CancellationToken cancellationToken)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Problem(
+                type: "https://andytipster.com/errors/authentication-failed",
+                title: "Authentication Failed",
+                detail: "User identity not found.",
+                statusCode: StatusCodes.Status401Unauthorized);
+        }
+
+        var result = await _authService.Enable2FAAsync(userId, cancellationToken);
+
+        if (!result.Succeeded)
+        {
+            return Problem(
+                type: "https://andytipster.com/errors/2fa-setup-failed",
+                title: "2FA Setup Failed",
+                detail: result.ErrorMessage,
+                statusCode: result.StatusCode);
+        }
+
+        return Ok(result.Data);
+    }
+
+    /// <summary>
+    /// Confirm 2FA setup by verifying a TOTP code. Activates 2FA and returns recovery codes.
+    /// </summary>
+    [Authorize]
+    [HttpPost("2fa/confirm")]
+    [ProducesResponseType(typeof(RecoveryCodesResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Confirm2FA([FromBody] Verify2FARequest request, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(request.Code))
+        {
+            return Problem(
+                type: "https://andytipster.com/errors/validation-failed",
+                title: "Validation Failed",
+                detail: "Verification code is required.",
+                statusCode: StatusCodes.Status400BadRequest);
+        }
+
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Problem(
+                type: "https://andytipster.com/errors/authentication-failed",
+                title: "Authentication Failed",
+                detail: "User identity not found.",
+                statusCode: StatusCodes.Status401Unauthorized);
+        }
+
+        var result = await _authService.Confirm2FASetupAsync(userId, request.Code, cancellationToken);
+
+        if (!result.Succeeded)
+        {
+            return Problem(
+                type: "https://andytipster.com/errors/2fa-confirmation-failed",
+                title: "2FA Confirmation Failed",
+                detail: result.ErrorMessage,
+                statusCode: result.StatusCode);
+        }
+
+        return Ok(result.Data);
+    }
+
+    /// <summary>
+    /// Verify TOTP code during login flow. Issues full token pair on success.
+    /// </summary>
+    [HttpPost("2fa/verify")]
+    [ProducesResponseType(typeof(LoginResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> Verify2FALogin([FromBody] Verify2FALoginRequest request, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Code))
+        {
+            return Problem(
+                type: "https://andytipster.com/errors/validation-failed",
+                title: "Validation Failed",
+                detail: "Email and verification code are required.",
+                statusCode: StatusCodes.Status400BadRequest);
+        }
+
+        var ipAddress = GetClientIpAddress();
+        var result = await _authService.Verify2FALoginAsync(request.Email, request.Code, ipAddress, cancellationToken);
+
+        if (!result.Succeeded)
+        {
+            return Problem(
+                type: "https://andytipster.com/errors/2fa-verification-failed",
+                title: "2FA Verification Failed",
+                detail: result.ErrorMessage,
+                statusCode: result.StatusCode);
+        }
+
+        return Ok(result.Data);
+    }
+
+    /// <summary>
+    /// Verify recovery code during login flow. Issues full token pair on success.
+    /// </summary>
+    [HttpPost("2fa/recovery")]
+    [ProducesResponseType(typeof(LoginResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> VerifyRecoveryCode([FromBody] VerifyRecoveryCodeRequest request, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.RecoveryCode))
+        {
+            return Problem(
+                type: "https://andytipster.com/errors/validation-failed",
+                title: "Validation Failed",
+                detail: "Email and recovery code are required.",
+                statusCode: StatusCodes.Status400BadRequest);
+        }
+
+        var ipAddress = GetClientIpAddress();
+        var result = await _authService.VerifyRecoveryCodeAsync(request.Email, request.RecoveryCode, ipAddress, cancellationToken);
+
+        if (!result.Succeeded)
+        {
+            return Problem(
+                type: "https://andytipster.com/errors/recovery-code-failed",
+                title: "Recovery Code Verification Failed",
+                detail: result.ErrorMessage,
+                statusCode: result.StatusCode);
+        }
+
+        return Ok(result.Data);
+    }
+
+    /// <summary>
+    /// Disable 2FA after password confirmation.
+    /// </summary>
+    [Authorize]
+    [HttpPost("2fa/disable")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> Disable2FA([FromBody] Disable2FARequest request, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(request.Password))
+        {
+            return Problem(
+                type: "https://andytipster.com/errors/validation-failed",
+                title: "Validation Failed",
+                detail: "Password is required.",
+                statusCode: StatusCodes.Status400BadRequest);
+        }
+
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Problem(
+                type: "https://andytipster.com/errors/authentication-failed",
+                title: "Authentication Failed",
+                detail: "User identity not found.",
+                statusCode: StatusCodes.Status401Unauthorized);
+        }
+
+        var result = await _authService.Disable2FAAsync(userId, request.Password, cancellationToken);
+
+        if (!result.Succeeded)
+        {
+            return Problem(
+                type: "https://andytipster.com/errors/2fa-disable-failed",
+                title: "2FA Disable Failed",
+                detail: result.ErrorMessage,
+                statusCode: result.StatusCode);
+        }
+
+        return Ok(new { message = "Two-factor authentication has been disabled." });
     }
 
     private string? GetClientIpAddress()

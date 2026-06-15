@@ -8,12 +8,26 @@ export interface LoginResponse {
   refreshToken?: string;
   expiresAt?: number;
   requires2FA: boolean;
+  twoFactorEmail?: string;
 }
 
 export interface TokenResponse {
   accessToken: string;
   refreshToken: string;
   expiresAt: number;
+}
+
+export interface RegisterResponse {
+  message: string;
+}
+
+export interface Enable2FAResponse {
+  secret: string;
+  qrCodeUrl: string;
+}
+
+export interface MessageResponse {
+  message: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -25,21 +39,46 @@ export class AuthService {
     return this.http.post<LoginResponse>(`${this.apiUrl}/login`, { email, password });
   }
 
-  verify2FA(code: string): Observable<TokenResponse> {
-    return this.http.post<TokenResponse>(`${this.apiUrl}/2fa/verify`, { code });
-  }
-
-  register(email: string, password: string, displayName: string): Observable<void> {
-    return this.http.post<void>(`${this.apiUrl}/register`, { email, password, displayName });
-  }
-
-  logout(): Observable<void> {
-    return this.http.post<void>(`${this.apiUrl}/logout`, {});
+  register(email: string, password: string, displayName: string): Observable<RegisterResponse> {
+    return this.http.post<RegisterResponse>(`${this.apiUrl}/register`, { email, password, displayName });
   }
 
   refreshToken(): Observable<TokenResponse> {
     const refreshToken = this.getStoredRefreshToken();
     return this.http.post<TokenResponse>(`${this.apiUrl}/refresh`, { refreshToken });
+  }
+
+  logout(): Observable<void> {
+    const refreshToken = this.getStoredRefreshToken();
+    return this.http.post<void>(`${this.apiUrl}/logout`, { refreshToken });
+  }
+
+  forgotPassword(email: string): Observable<MessageResponse> {
+    return this.http.post<MessageResponse>(`${this.apiUrl}/forgot-password`, { email });
+  }
+
+  resetPassword(email: string, token: string, newPassword: string): Observable<MessageResponse> {
+    return this.http.post<MessageResponse>(`${this.apiUrl}/reset-password`, { email, token, newPassword });
+  }
+
+  socialLogin(provider: string, accessToken: string): Observable<LoginResponse> {
+    return this.http.post<LoginResponse>(`${this.apiUrl}/social-login`, { provider, accessToken });
+  }
+
+  enable2FA(): Observable<Enable2FAResponse> {
+    return this.http.post<Enable2FAResponse>(`${this.apiUrl}/2fa/enable`, {});
+  }
+
+  confirm2FA(code: string): Observable<MessageResponse> {
+    return this.http.post<MessageResponse>(`${this.apiUrl}/2fa/confirm`, { code });
+  }
+
+  verify2FA(email: string, code: string): Observable<TokenResponse> {
+    return this.http.post<TokenResponse>(`${this.apiUrl}/2fa/verify`, { email, code });
+  }
+
+  verifyRecoveryCode(email: string, code: string): Observable<TokenResponse> {
+    return this.http.post<TokenResponse>(`${this.apiUrl}/2fa/recovery`, { email, code });
   }
 
   getStoredAccessToken(): string | null {

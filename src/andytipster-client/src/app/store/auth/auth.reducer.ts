@@ -11,14 +11,18 @@ export const authReducer = createReducer(
     error: null,
   })),
 
-  on(AuthActions.loginSuccess, (state, { accessToken, refreshToken, expiresAt }): AuthState => ({
+  on(AuthActions.loginSuccess, (state, { accessToken, refreshToken, expiresAt, user, roles, permissions }): AuthState => ({
     ...state,
     accessToken,
     refreshToken,
+    user: user ?? state.user,
+    roles: roles ?? state.roles,
+    permissions: permissions ?? state.permissions,
     isAuthenticated: true,
     isLoading: false,
     error: null,
     requires2FA: false,
+    twoFactorEmail: null,
     tokenExpiresAt: expiresAt,
   })),
 
@@ -28,10 +32,11 @@ export const authReducer = createReducer(
     error,
   })),
 
-  on(AuthActions.loginRequires2FA, (state): AuthState => ({
+  on(AuthActions.loginRequires2FA, (state, { email }): AuthState => ({
     ...state,
     isLoading: false,
     requires2FA: true,
+    twoFactorEmail: email,
   })),
 
   on(AuthActions.verify2FA, (state): AuthState => ({
@@ -40,7 +45,34 @@ export const authReducer = createReducer(
     error: null,
   })),
 
-  on(AuthActions.verify2FASuccess, (state, { accessToken, refreshToken, expiresAt }): AuthState => ({
+  on(AuthActions.verify2FASuccess, (state, { accessToken, refreshToken, expiresAt, user, roles, permissions }): AuthState => ({
+    ...state,
+    accessToken,
+    refreshToken,
+    user: user ?? state.user,
+    roles: roles ?? state.roles,
+    permissions: permissions ?? state.permissions,
+    isAuthenticated: true,
+    isLoading: false,
+    error: null,
+    requires2FA: false,
+    twoFactorEmail: null,
+    tokenExpiresAt: expiresAt,
+  })),
+
+  on(AuthActions.verify2FAFailure, (state, { error }): AuthState => ({
+    ...state,
+    isLoading: false,
+    error,
+  })),
+
+  on(AuthActions.verifyRecoveryCode, (state): AuthState => ({
+    ...state,
+    isLoading: true,
+    error: null,
+  })),
+
+  on(AuthActions.verifyRecoveryCodeSuccess, (state, { accessToken, refreshToken, expiresAt }): AuthState => ({
     ...state,
     accessToken,
     refreshToken,
@@ -48,10 +80,11 @@ export const authReducer = createReducer(
     isLoading: false,
     error: null,
     requires2FA: false,
+    twoFactorEmail: null,
     tokenExpiresAt: expiresAt,
   })),
 
-  on(AuthActions.verify2FAFailure, (state, { error }): AuthState => ({
+  on(AuthActions.verifyRecoveryCodeFailure, (state, { error }): AuthState => ({
     ...state,
     isLoading: false,
     error,
@@ -73,6 +106,30 @@ export const authReducer = createReducer(
     ...state,
     isLoading: false,
     error,
+  })),
+
+  on(AuthActions.forgotPassword, (state): AuthState => ({
+    ...state,
+    isLoading: true,
+    error: null,
+  })),
+
+  on(AuthActions.forgotPasswordSuccess, (state): AuthState => ({
+    ...state,
+    isLoading: false,
+    error: null,
+  })),
+
+  on(AuthActions.forgotPasswordFailure, (state, { error }): AuthState => ({
+    ...state,
+    isLoading: false,
+    error,
+  })),
+
+  on(AuthActions.socialLogin, (state): AuthState => ({
+    ...state,
+    isLoading: true,
+    error: null,
   })),
 
   on(AuthActions.logout, AuthActions.logoutSuccess, (): AuthState => ({

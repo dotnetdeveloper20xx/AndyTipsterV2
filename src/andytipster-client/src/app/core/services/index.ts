@@ -5,3 +5,5 @@ export * from './permissions.service';
 export * from './tips.service';
 export * from './plans.service';
 export * from './theme.service';
+export * from './admin-users.service';
+export * from './audit.service';

@@ -19,8 +19,9 @@ export class AuthEffects {
         this.authService.login(email, password).pipe(
           map((response) => {
             if (response.requires2FA) {
-              return AuthActions.loginRequires2FA();
+              return AuthActions.loginRequires2FA({ email: response.twoFactorEmail ?? email });
             }
+            this.authService.storeTokens(response.accessToken!, response.refreshToken!);
             return AuthActions.loginSuccess({
               accessToken: response.accessToken!,
               refreshToken: response.refreshToken!,
@@ -28,7 +29,7 @@ export class AuthEffects {
             });
           }),
           catchError((error) =>
-            of(AuthActions.loginFailure({ error: error.message ?? 'Login failed' }))
+            of(AuthActions.loginFailure({ error: error?.error?.message ?? error.message ?? 'Login failed' }))
           )
         )
       )
@@ -38,17 +39,39 @@ export class AuthEffects {
   verify2FA$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AuthActions.verify2FA),
-      exhaustMap(({ code }) =>
-        this.authService.verify2FA(code).pipe(
-          map((response) =>
-            AuthActions.verify2FASuccess({
+      exhaustMap(({ email, code }) =>
+        this.authService.verify2FA(email, code).pipe(
+          map((response) => {
+            this.authService.storeTokens(response.accessToken, response.refreshToken);
+            return AuthActions.verify2FASuccess({
               accessToken: response.accessToken,
               refreshToken: response.refreshToken,
               expiresAt: response.expiresAt,
-            })
-          ),
+            });
+          }),
           catchError((error) =>
-            of(AuthActions.verify2FAFailure({ error: error.message ?? '2FA verification failed' }))
+            of(AuthActions.verify2FAFailure({ error: error?.error?.message ?? error.message ?? '2FA verification failed' }))
+          )
+        )
+      )
+    )
+  );
+
+  verifyRecoveryCode$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(AuthActions.verifyRecoveryCode),
+      exhaustMap(({ email, code }) =>
+        this.authService.verifyRecoveryCode(email, code).pipe(
+          map((response) => {
+            this.authService.storeTokens(response.accessToken, response.refreshToken);
+            return AuthActions.verifyRecoveryCodeSuccess({
+              accessToken: response.accessToken,
+              refreshToken: response.refreshToken,
+              expiresAt: response.expiresAt,
+            });
+          }),
+          catchError((error) =>
+            of(AuthActions.verifyRecoveryCodeFailure({ error: error?.error?.message ?? error.message ?? 'Recovery code verification failed' }))
           )
         )
       )
@@ -62,7 +85,45 @@ export class AuthEffects {
         this.authService.register(email, password, displayName).pipe(
           map(() => AuthActions.registerSuccess()),
           catchError((error) =>
-            of(AuthActions.registerFailure({ error: error.message ?? 'Registration failed' }))
+            of(AuthActions.registerFailure({ error: error?.error?.message ?? error.message ?? 'Registration failed' }))
+          )
+        )
+      )
+    )
+  );
+
+  forgotPassword$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(AuthActions.forgotPassword),
+      exhaustMap(({ email }) =>
+        this.authService.forgotPassword(email).pipe(
+          map(() => AuthActions.forgotPasswordSuccess()),
+          catchError((error) =>
+            of(AuthActions.forgotPasswordFailure({ error: error?.error?.message ?? error.message ?? 'Request failed' }))
+          )
+        )
+      )
+    )
+  );
+
+  socialLogin$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(AuthActions.socialLogin),
+      exhaustMap(({ provider, accessToken }) =>
+        this.authService.socialLogin(provider, accessToken).pipe(
+          map((response) => {
+            if (response.requires2FA) {
+              return AuthActions.loginRequires2FA({ email: response.twoFactorEmail ?? '' });
+            }
+            this.authService.storeTokens(response.accessToken!, response.refreshToken!);
+            return AuthActions.loginSuccess({
+              accessToken: response.accessToken!,
+              refreshToken: response.refreshToken!,
+              expiresAt: response.expiresAt!,
+            });
+          }),
+          catchError((error) =>
+            of(AuthActions.loginFailure({ error: error?.error?.message ?? error.message ?? 'Social login failed' }))
           )
         )
       )
@@ -86,24 +147,48 @@ export class AuthEffects {
       ofType(AuthActions.refreshToken),
       exhaustMap(() =>
         this.authService.refreshToken().pipe(
-          map((response) =>
-            AuthActions.refreshTokenSuccess({
+          map((response) => {
+            this.authService.storeTokens(response.accessToken, response.refreshToken);
+            return AuthActions.refreshTokenSuccess({
               accessToken: response.accessToken,
               refreshToken: response.refreshToken,
               expiresAt: response.expiresAt,
-            })
-          ),
+            });
+          }),
           catchError(() => of(AuthActions.refreshTokenFailure()))
         )
       )
     )
   );
 
+  initAuth$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(AuthActions.initAuth),
+      map(() => {
+        const accessToken = this.authService.getStoredAccessToken();
+        const refreshToken = this.authService.getStoredRefreshToken();
+        if (accessToken && refreshToken) {
+          return AuthActions.refreshToken();
+        }
+        return AuthActions.refreshTokenFailure();
+      })
+    )
+  );
+
   loginSuccess$ = createEffect(
     () =>
       this.actions$.pipe(
-        ofType(AuthActions.loginSuccess, AuthActions.verify2FASuccess),
+        ofType(AuthActions.loginSuccess, AuthActions.verify2FASuccess, AuthActions.verifyRecoveryCodeSuccess),
         tap(() => this.router.navigate(['/']))
+      ),
+    { dispatch: false }
+  );
+
+  loginRequires2FA$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(AuthActions.loginRequires2FA),
+        tap(() => this.router.navigate(['/auth/2fa']))
       ),
     { dispatch: false }
   );
@@ -112,6 +197,18 @@ export class AuthEffects {
     () =>
       this.actions$.pipe(
         ofType(AuthActions.logoutSuccess, AuthActions.refreshTokenFailure),
+        tap(() => {
+          this.authService.clearTokens();
+          this.router.navigate(['/auth/login']);
+        })
+      ),
+    { dispatch: false }
+  );
+
+  registerSuccess$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(AuthActions.registerSuccess),
         tap(() => this.router.navigate(['/auth/login']))
       ),
     { dispatch: false }

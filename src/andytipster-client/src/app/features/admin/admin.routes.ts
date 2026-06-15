@@ -36,6 +36,11 @@ export const ADMIN_ROUTES: Routes = [
         path: 'analytics',
         loadComponent: () => import('./pages/analytics/analytics.component').then(m => m.AnalyticsComponent),
       },
+      {
+        path: 'audit',
+        loadComponent: () => import('./pages/audit-log/audit-log.component').then(m => m.AuditLogComponent),
+        data: { roles: ['Super Admin'] },
+      },
     ],
   },
 ];

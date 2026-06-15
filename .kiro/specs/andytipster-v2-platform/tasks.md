@@ -103,12 +103,12 @@ This plan implements the AndyTipster V2 horse racing tips subscription platform 
     - **Property 4: Authentication Lockout Threshold**
     - **Validates: Requirements 1.10, 2.3**
 
-  - [~] 2.7 Implement social login (Google, Facebook, Apple)
+  - [x] 2.7 Implement social login (Google, Facebook, Apple)
     - Configure OAuth2 providers for Google, Facebook, and Apple
     - Create or link account based on matching email address
     - _Requirements: 1.8_
 
-  - [~] 2.8 Implement two-factor authentication (TOTP)
+  - [x] 2.8 Implement two-factor authentication (TOTP)
     - Generate TOTP secret and QR code for authenticator app registration
     - Require valid TOTP code confirmation before activating 2FA
     - Validate TOTP codes with 30-second time step and ±1 clock skew tolerance
@@ -146,7 +146,7 @@ This plan implements the AndyTipster V2 horse racing tips subscription platform 
     - **Property 8: Role Hierarchy Enforcement**
     - **Validates: Requirements 3.7**
 
-  - [~] 2.14 Implement Angular auth module with NgRx auth state
+  - [x] 2.14 Implement Angular auth module with NgRx auth state
     - Build login, register, forgot password, 2FA setup components
     - Implement NgRx auth slice (tokens, login status, user info)
     - Implement HTTP interceptor for JWT injection with token refresh queuing
@@ -155,11 +155,11 @@ This plan implements the AndyTipster V2 horse racing tips subscription platform 
     - Hide navigation items based on user role/permissions
     - _Requirements: 3.3, 6.1, 6.2, 6.5, 6.6, 6.7_
 
-- [~] 3. Checkpoint — Phase 1 Auth & Core
+- [x] 3. Checkpoint — Phase 1 Auth & Core
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 4. Phase 1 — Foundation: User management
-  - [~] 4.1 Implement user management API endpoints
+  - [x] 4.1 Implement user management API endpoints
     - Build paginated user listing with search by name/email and filters (role, plan, status, date ranges)
     - Target 200ms response time for datasets up to 100,000 users
     - Implement user impersonation (read-only session with banner)
