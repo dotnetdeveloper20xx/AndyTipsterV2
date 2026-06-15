@@ -37,6 +37,10 @@ export const ADMIN_ROUTES: Routes = [
         loadComponent: () => import('./pages/analytics/analytics.component').then(m => m.AnalyticsComponent),
       },
       {
+        path: 'paypal-dashboard',
+        loadComponent: () => import('./pages/paypal-dashboard/paypal-dashboard.component').then(m => m.PayPalDashboardComponent),
+      },
+      {
         path: 'audit',
         loadComponent: () => import('./pages/audit-log/audit-log.component').then(m => m.AuditLogComponent),
         data: { roles: ['Super Admin'] },

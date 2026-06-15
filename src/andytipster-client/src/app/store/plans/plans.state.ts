@@ -7,20 +7,25 @@ export type PlanSyncStatus = 'Synced' | 'SyncPending' | 'SyncFailed';
 export interface Plan {
   id: string;
   name: string;
+  slug: string;
   price: number;
   currency: Currency;
   billingCycle: BillingCycle;
   features: string[];
-  trialDays: number | null;
+  trialPeriodDays: number;
   setupFee: number;
   gracePeriodDays: number;
-  autoRenewal: boolean;
+  autoRenew: boolean;
   promoCodeCompatible: boolean;
+  isActive: boolean;
   isArchived: boolean;
-  paypalPlanId: string | null;
+  payPalPlanId: string | null;
+  stripePriceId: string | null;
   syncStatus: PlanSyncStatus;
+  upgradePaths: string[];
+  downgradePaths: string[];
   createdAt: string;
-  updatedAt: string;
+  updatedAt: string | null;
 }
 
 export interface PlansState extends EntityState<Plan> {

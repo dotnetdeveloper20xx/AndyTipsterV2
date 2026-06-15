@@ -25,4 +25,8 @@ public class Plan
 
     public ICollection<Subscription> Subscriptions { get; set; } = new List<Subscription>();
     public ICollection<TipCategory> IncludedCategories { get; set; } = new List<TipCategory>();
+    public ICollection<PlanFeature> Features { get; set; } = new List<PlanFeature>();
+    public ICollection<PlanTransitionPath> UpgradePaths { get; set; } = new List<PlanTransitionPath>();
+    public ICollection<PlanTransitionPath> DowngradePaths { get; set; } = new List<PlanTransitionPath>();
+    public ICollection<PromoCode> CompatiblePromoCodes { get; set; } = new List<PromoCode>();
 }

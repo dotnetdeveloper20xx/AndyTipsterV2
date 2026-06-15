@@ -37,6 +37,9 @@ public class AndyTipsterDbContext : IdentityDbContext<ApplicationUser, Role, Gui
     public DbSet<Referral> Referrals => Set<Referral>();
     public DbSet<NavigationMenu> NavigationMenus => Set<NavigationMenu>();
     public DbSet<MenuItem> MenuItems => Set<MenuItem>();
+    public DbSet<PlanFeature> PlanFeatures => Set<PlanFeature>();
+    public DbSet<PlanTransitionPath> PlanTransitionPaths => Set<PlanTransitionPath>();
+    public DbSet<WebhookEvent> WebhookEvents => Set<WebhookEvent>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

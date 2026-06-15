@@ -1,7 +1,10 @@
 using System.Text;
 using AndyTipster.Application.Audit.Services;
 using AndyTipster.Application.Auth.Services;
+using AndyTipster.Application.Payments.Services;
+using AndyTipster.Application.Plans.Services;
 using AndyTipster.Application.Roles.Services;
+using AndyTipster.Application.Subscriptions.Services;
 using AndyTipster.Application.Users.Services;
 using AndyTipster.Domain.Entities;
 using AndyTipster.Infrastructure.Authorization;
@@ -155,6 +158,14 @@ public static class DependencyInjection
         services.AddScoped<ISocialAuthService, SocialAuthService>();
         services.AddScoped<IAuditService, AuditService>();
         services.AddScoped<IUserManagementService, UserManagementService>();
+
+        // Register subscription and payment services
+        services.AddScoped<ISubscriptionPlanService, SubscriptionPlanService>();
+        services.AddScoped<IPromoCodeService, PromoCodeService>();
+        services.AddScoped<IPayPalService, PayPalService>();
+        services.AddScoped<IStripeService, StripeService>();
+        services.AddScoped<ICheckoutService, CheckoutService>();
+        services.AddScoped<ISubscriptionService, SubscriptionService>();
 
         // Register HttpClientFactory for social auth provider calls
         services.AddHttpClient("SocialAuth", client =>

@@ -7,3 +7,5 @@ export * from './plans.service';
 export * from './theme.service';
 export * from './admin-users.service';
 export * from './audit.service';
+export * from './checkout.service';
+export * from './subscription.service';

@@ -24,6 +24,10 @@ export const SUBSCRIBER_ROUTES: Routes = [
         loadComponent: () => import('./pages/billing/billing.component').then(m => m.BillingComponent),
       },
       {
+        path: 'checkout',
+        loadComponent: () => import('./pages/checkout/checkout.component').then(m => m.CheckoutComponent),
+      },
+      {
         path: 'profile',
         loadComponent: () => import('./pages/profile/profile.component').then(m => m.ProfileComponent),
       },
