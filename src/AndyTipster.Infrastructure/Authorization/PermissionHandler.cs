@@ -14,7 +14,7 @@ public class PermissionHandler : AuthorizationHandler<PermissionRequirement>
         PermissionRequirement requirement)
     {
         // Check if user has the permission claim
-        var permissionClaim = context.User.FindAll("permissions")
+        var permissionClaim = context.User.FindAll("permission")
             .Any(c => c.Value == requirement.Permission);
 
         if (permissionClaim)
