@@ -21,6 +21,9 @@ public class ApplicationUserConfiguration : IEntityTypeConfiguration<Application
         builder.Property(u => u.TimeZone)
             .HasMaxLength(100);
 
+        // Ignore the duplicate Timezone property (TimeZone with capital Z is the canonical one)
+        builder.Ignore(u => u.Timezone);
+
         builder.Property(u => u.CreatedAt)
             .HasDefaultValueSql("GETUTCDATE()");
 

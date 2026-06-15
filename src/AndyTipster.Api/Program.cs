@@ -43,10 +43,14 @@ try
     });
 
     // ─── Application Insights Telemetry ─────────────────────────────────────────
-    builder.Services.AddApplicationInsightsTelemetry(options =>
+    var aiConnectionString = builder.Configuration["ApplicationInsights:ConnectionString"];
+    if (!string.IsNullOrEmpty(aiConnectionString))
     {
-        options.ConnectionString = builder.Configuration["ApplicationInsights:ConnectionString"];
-    });
+        builder.Services.AddApplicationInsightsTelemetry(options =>
+        {
+            options.ConnectionString = aiConnectionString;
+        });
+    }
 
     // ─── Layer Dependency Injection ─────────────────────────────────────────────
     builder.Services.AddApplicationServices();
@@ -271,6 +275,14 @@ try
     if (app.Environment.IsDevelopment())
     {
         app.MapOpenApi();
+    }
+
+    // Ensure database exists before seeding
+    if (app.Environment.IsDevelopment())
+    {
+        using var scope = app.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AndyTipster.Infrastructure.Data.AndyTipsterDbContext>();
+        await db.Database.EnsureCreatedAsync();
     }
 
     // Seed data in development

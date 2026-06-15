@@ -28,7 +28,7 @@ public class PromoCodeConfiguration : IEntityTypeConfiguration<PromoCode>
             .IsUnique();
 
         builder.HasMany(pc => pc.ApplicablePlans)
-            .WithMany()
+            .WithMany(p => p.CompatiblePromoCodes)
             .UsingEntity("PromoCodePlan");
     }
 }
