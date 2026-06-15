@@ -1,6 +1,7 @@
 using System.Text;
 using AndyTipster.Application.Audit.Services;
 using AndyTipster.Application.Auth.Services;
+using AndyTipster.Application.CMS.Services;
 using AndyTipster.Application.Payments.Services;
 using AndyTipster.Application.Plans.Services;
 using AndyTipster.Application.Roles.Services;
@@ -11,6 +12,7 @@ using AndyTipster.Infrastructure.Authorization;
 using AndyTipster.Infrastructure.Configuration;
 using AndyTipster.Infrastructure.Data;
 using AndyTipster.Infrastructure.Services;
+using AndyTipster.Infrastructure.Services.CMS;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -166,6 +168,13 @@ public static class DependencyInjection
         services.AddScoped<IStripeService, StripeService>();
         services.AddScoped<ICheckoutService, CheckoutService>();
         services.AddScoped<ISubscriptionService, SubscriptionService>();
+
+        // Register CMS services
+        services.AddScoped<IPageService, PageService>();
+        services.AddScoped<IMediaService, MediaService>();
+        services.AddScoped<INavigationService, NavigationService>();
+        services.AddScoped<ISeoService, SeoService>();
+        services.AddScoped<ISiteSettingsService, SiteSettingsService>();
 
         // Register HttpClientFactory for social auth provider calls
         services.AddHttpClient("SocialAuth", client =>

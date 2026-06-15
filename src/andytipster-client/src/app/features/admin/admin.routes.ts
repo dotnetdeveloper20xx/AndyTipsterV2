@@ -33,6 +33,14 @@ export const ADMIN_ROUTES: Routes = [
         loadComponent: () => import('./pages/cms/cms.component').then(m => m.CmsComponent),
       },
       {
+        path: 'media-library',
+        loadComponent: () => import('./pages/media-library/media-library.component').then(m => m.MediaLibraryComponent),
+      },
+      {
+        path: 'navigation',
+        loadComponent: () => import('./pages/navigation-editor/navigation-editor.component').then(m => m.NavigationEditorComponent),
+      },
+      {
         path: 'analytics',
         loadComponent: () => import('./pages/analytics/analytics.component').then(m => m.AnalyticsComponent),
       },

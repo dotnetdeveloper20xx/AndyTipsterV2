@@ -40,6 +40,9 @@ public class AndyTipsterDbContext : IdentityDbContext<ApplicationUser, Role, Gui
     public DbSet<PlanFeature> PlanFeatures => Set<PlanFeature>();
     public DbSet<PlanTransitionPath> PlanTransitionPaths => Set<PlanTransitionPath>();
     public DbSet<WebhookEvent> WebhookEvents => Set<WebhookEvent>();
+    public DbSet<SiteSettings> SiteSettings => Set<SiteSettings>();
+    public DbSet<Redirect> Redirects => Set<Redirect>();
+    public DbSet<MediaTag> MediaTags => Set<MediaTag>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

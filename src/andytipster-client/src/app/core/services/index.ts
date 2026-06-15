@@ -9,3 +9,5 @@ export * from './admin-users.service';
 export * from './audit.service';
 export * from './checkout.service';
 export * from './subscription.service';
+export * from './cms.service';
+export * from './media.service';
