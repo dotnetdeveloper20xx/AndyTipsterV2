@@ -1,134 +1,317 @@
-# AndyTipster V2
+# 🏇 AndyTipster V2 — Horse Racing Tips Subscription Platform
 
-A complete rebuild of the AndyTipster horse racing tips subscription platform — modern tech stack, scalable architecture, and a rich feature set designed for growth.
+> A production-grade SaaS platform delivering premium horse racing tips to subscribers via a modern, full-stack architecture. Built with .NET 10, Angular 20, and deployed on Azure.
+
+[![.NET 10](https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet)](https://dotnet.microsoft.com/)
+[![Angular 20](https://img.shields.io/badge/Angular-20-DD0031?logo=angular)](https://angular.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178C6?logo=typescript)](https://www.typescriptlang.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.0-06B6D4?logo=tailwindcss)](https://tailwindcss.com/)
+[![Azure](https://img.shields.io/badge/Azure-Cloud-0078D4?logo=microsoftazure)](https://azure.microsoft.com/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
+---
+
+## What Is AndyTipster?
+
+AndyTipster is a **complete subscription business platform** for horse racing tipsters. It handles everything from user registration and payment processing to tip delivery and performance analytics — giving tipsters the tools to run a professional, profitable operation.
+
+**Key Capabilities:**
+- 💳 Dual payment gateway (PayPal + Stripe) with subscription management
+- 📊 Automated P&L tracking with verified public performance stats
+- 📱 Progressive Web App — installable, works offline, push notifications
+- 🎨 Custom CMS with drag-and-drop page builder (18 block types)
+- 🤖 Help bot, Telegram delivery, multi-channel notifications
+- 🔒 Enterprise-grade auth: JWT, 2FA, RBAC with 6 roles and 27 permissions
+- 📈 Revenue analytics, subscriber dashboards, referral program
+
+---
+
+## Screenshots & Demo
+
+| Landing Page | Admin Dashboard | Tips Feed |
+|:---:|:---:|:---:|
+| Hero + pricing + social proof | MRR, subscribers, activity | Category filtering + P&L |
+
+**Demo Credentials:**
+| Role | Email | Password |
+|------|-------|----------|
+| Super Admin | `admin@andytipster.com` | `Admin123!` |
+| Subscriber | `subscriber@test.com` | `Test123!` |
+| Free User | `free@test.com` | `Test123!` |
+
+---
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Backend | .NET 10 Web API (Minimal APIs + Controllers) |
-| Frontend | Angular 20 + Tailwind CSS v4 + DaisyUI v5 |
-| State Management | NgRx 20 (Store, Effects, Entity, DevTools) |
-| Database | SQL Server (Azure SQL) |
-| ORM | Entity Framework Core |
-| Auth | ASP.NET Core Identity + JWT + Social Login |
-| Payments | PayPal + Stripe |
-| CMS | Custom block-based page builder |
-| Media Storage | Azure Blob Storage + Azure CDN |
-| Hosting | Azure App Service |
-| Monitoring | Serilog + Azure Application Insights |
-| Email | SendGrid |
-| Push | Web Push API (Service Worker) |
-| Messaging | Telegram Bot API |
+| Layer | Technology | Why |
+|-------|-----------|-----|
+| **Backend** | .NET 10 Web API | Performance, type safety, mature ecosystem |
+| **Frontend** | Angular 20 + NgRx | Enterprise SPA with predictable state |
+| **UI** | Tailwind CSS 4 + DaisyUI 5 | Rapid, consistent, dark mode built-in |
+| **Database** | SQL Server (Azure SQL) | Relational integrity, EF Core ORM |
+| **Auth** | ASP.NET Core Identity + JWT | Industry standard, battle-tested |
+| **Payments** | PayPal + Stripe | Maximum reach, webhook-driven |
+| **CMS** | Custom block-based editor | No third-party CMS dependency |
+| **Storage** | Azure Blob + CDN | Global asset delivery |
+| **Monitoring** | Serilog + Application Insights | Structured logging, alerts |
+| **Notifications** | SendGrid + Web Push + Telegram | Multi-channel delivery |
+| **PWA** | Angular Service Worker | Offline access, installable |
+
+---
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                     Angular 20 SPA (PWA)                        │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────────────┐   │
+│  │  Public  │ │   Auth   │ │Subscriber│ │      Admin       │   │
+│  │  Module  │ │  Module  │ │  Module  │ │     Module       │   │
+│  └──────────┘ └──────────┘ └──────────┘ └──────────────────┘   │
+│  ┌─────────────────── NgRx Store ───────────────────────────┐   │
+│  │ Auth │ User │ Roles │ Permissions │ Tips │ Plans          │   │
+│  └──────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────┘
+                            │ REST + JWT
+┌─────────────────────────────────────────────────────────────────┐
+│                    .NET 10 Web API                              │
+│  ┌─────────────────────────────────────────────────────────┐   │
+│  │ Controllers │ Minimal APIs │ Middleware │ Health Checks  │   │
+│  └─────────────────────────────────────────────────────────┘   │
+│  ┌─────────────────────────────────────────────────────────┐   │
+│  │        Application Layer (Services, DTOs, Validators)    │   │
+│  └─────────────────────────────────────────────────────────┘   │
+│  ┌─────────────────────────────────────────────────────────┐   │
+│  │     Domain Layer (Entities, Enumerations, Events)        │   │
+│  └─────────────────────────────────────────────────────────┘   │
+│  ┌─────────────────────────────────────────────────────────┐   │
+│  │  Infrastructure (EF Core, Azure, PayPal, Stripe, Email)  │   │
+│  └─────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────┘
+          │              │              │              │
+    ┌─────┴─────┐ ┌─────┴─────┐ ┌─────┴─────┐ ┌─────┴─────┐
+    │ Azure SQL │ │ Blob + CDN│ │PayPal API │ │Stripe API │
+    └───────────┘ └───────────┘ └───────────┘ └───────────┘
+```
+
+---
+
+## Features
+
+### 🔐 Authentication & Authorization
+- Email/password registration with verification
+- Social login (Google, Facebook, Apple)
+- Two-factor authentication (TOTP + 8 recovery codes)
+- JWT with 15-min access + 7-day refresh token rotation
+- Account lockout (5 failed attempts → 15-min lock)
+- 6 roles: Super Admin, Admin, Moderator, Subscriber, Free User, Guest
+- 27 granular permissions with role hierarchy enforcement
+
+### 💳 Payments & Subscriptions
+- PayPal Smart Buttons + Stripe hosted fields
+- Flexible plan builder (weekly to annual billing)
+- Free trials (1-365 days), setup fees, promo codes
+- Idempotent webhook processing with signature verification
+- Subscription self-service (upgrade, downgrade, pause, cancel)
+- In-app PayPal admin dashboard with MRR/ARR/churn analytics
+
+### 🏇 Tips Engine
+- Create, schedule, and publish racing tips
+- CSV bulk import (500 rows per batch)
+- Status workflow: Draft → Published → Archived
+- Result tracking: Won, Lost, Void, Push
+- Automatic P&L calculation (level stakes methodology)
+- Content access gating by subscription plan + category
+
+### 📝 Content Management System
+- Drag-and-drop page builder with live preview
+- 18 content block types (Hero, Rich Text, Pricing Table, FAQ, etc.)
+- Version history with one-click rollback
+- Scheduled publishing with timezone awareness
+- Media library with upload, crop, resize, CDN delivery
+- SEO management (meta tags, sitemap, JSON-LD structured data)
+
+### 📱 Progressive Web App
+- Installable on mobile home screen
+- Offline access to cached tips and plans
+- Service worker with smart caching strategies
+- Mobile bottom navigation bar
+- Offline action queue with auto-sync
+
+### 🔔 Notifications
+- Multi-channel: Email, Web Push, Telegram, In-app
+- Per-user preferences with category/channel toggles and quiet hours
+- Retry with exponential backoff (3 attempts)
+- Notification bell with unread count (99+ cap)
+
+### 📊 Analytics
+- **Public**: Strike rate, ROI, monthly P&L charts
+- **Subscriber**: Personal P&L, winning streak, performance summaries
+- **Admin**: Combined revenue (PayPal + Stripe), MRR, churn, LTV, forecasting
+
+### 🤝 Community & Engagement
+- Comments on daily tips with moderation tools
+- Polls with real-time results
+- Referral program with tracking and configurable rewards
+- Social media components (follow bar, share buttons, proof counter)
+- Help bot widget with conversation flows and escalation
+
+### 🛡️ Compliance & Security
+- GDPR: Data export, 30-day account deletion, breach notification
+- Cookie consent with granular category toggles
+- HTTPS enforcement, rate limiting, security headers (CSP, HSTS)
+- Append-only audit log with 2-year retention
+- PCI DSS compliance via hosted payment fields
+
+---
 
 ## Project Structure
 
 ```
 src/
-├── AndyTipster.Api/            # Presentation layer — controllers, minimal APIs, middleware
-├── AndyTipster.Application/    # Application layer — services, validators, DTOs
-├── AndyTipster.Domain/         # Domain layer — entities, enumerations, value objects
-├── AndyTipster.Infrastructure/ # Infrastructure — EF Core, external service clients
-├── andytipster-client/         # Angular 20 SPA (standalone components, NgRx)
-└── AndyTipster.slnx            # Solution file
+├── AndyTipster.slnx                     # .NET solution
+├── AndyTipster.Api/                     # API endpoints, middleware, controllers
+├── AndyTipster.Application/             # DTOs, service interfaces, validators
+├── AndyTipster.Domain/                  # Entities, enumerations, domain events
+├── AndyTipster.Infrastructure/          # EF Core, external services, seeding
+└── andytipster-client/                  # Angular 20 SPA
+    └── src/app/
+        ├── core/                        # Guards, interceptors, services
+        ├── shared/                      # DataTable, pipes, directives, components
+        ├── store/                       # NgRx (auth, user, roles, permissions, tips, plans)
+        └── features/
+            ├── public/                  # Landing, pricing, blog, FAQ
+            ├── auth/                    # Login, register, 2FA, forgot password
+            ├── subscriber/             # Tips, results, billing, checkout, profile
+            └── admin/                   # Users, plans, tips, CMS, analytics, audit
 ```
 
-## Architecture
-
-### Backend (Layered / Clean Architecture)
-
-- **Minimal APIs** for simple CRUD endpoints (performance)
-- **Controllers** for complex domain operations (organisation)
-- **CQRS-lite** — read/write separation at the service layer
-- **RFC 7807 ProblemDetails** for all error responses
-- **Rate limiting** — 100 req/min/IP on auth, 1000 req/min/user on general endpoints
-- **Security headers** — HSTS, CSP, X-Frame-Options, X-Content-Type-Options
-- **Health checks** — database, PayPal API, Azure Blob Storage
-
-### Frontend (Angular 20 + NgRx)
-
-- **Standalone components** with OnPush change detection throughout
-- **NgRx Store** — 6 feature slices (auth, user, roles, permissions, tips, plans)
-- **Lazy-loaded routes** — public, auth, subscriber, admin
-- **JWT interceptor** with token refresh queuing and replay
-- **Route guards** — auth, role, permission, unauth
-- **DaisyUI theming** — custom light/dark themes with system preference detection
-- **Responsive** — mobile (375px), tablet (768px), desktop (1024px), wide (1280px)
-
-### Shared Components
-
-- **Data Table** — generic, reusable table with pagination, sorting, filtering, search (300ms debounce), row selection, bulk actions, CSV/Excel export, skeleton loading, empty/error states, mobile scroll
-- **Skeleton Loader** — shimmer animation with configurable timeout and retry
-- **Empty State** — illustration + message + CTA
-- **Theme Toggle** — dark/light mode switch with local storage persistence
-
-## Features (Planned)
-
-- User registration, login, 2FA, social login (Google, Facebook, Apple)
-- Multi-role authorization (Super Admin, Admin, Moderator, Subscriber, Free User, Guest)
-- Subscription management with PayPal and Stripe
-- Custom CMS with drag-and-drop page builder
-- Horse racing tips engine with P&L tracking
-- Multi-channel notifications (email, push, Telegram, in-app)
-- GDPR compliance (data export, account deletion, cookie consent)
-- Progressive Web App (offline access, installable)
-- Performance analytics and public proof stats
-- Help bot, referral program, comments, polls
+---
 
 ## Getting Started
 
 ### Prerequisites
 
 - [.NET 10 SDK](https://dotnet.microsoft.com/download)
-- [Node.js 22+](https://nodejs.org/) and npm
-- [Angular CLI](https://angular.dev/tools/cli) (`npm install -g @angular/cli`)
-- SQL Server (LocalDB for development)
+- [Node.js 22+](https://nodejs.org/) (LTS)
+- [Angular CLI 20](https://angular.dev/) (`npm i -g @angular/cli`)
+- SQL Server (LocalDB works for development)
 
-### Backend
+### Quick Start
 
 ```bash
+# Clone the repo
+git clone https://github.com/dotnetdeveloper20xx/AndyTipsterV2.git
+cd AndyTipsterV2
+
+# Start the backend
 cd src
 dotnet restore
-dotnet build
 dotnet run --project AndyTipster.Api
-```
+# API runs at https://localhost:7001 — seed data loads automatically
 
-The API runs on `https://localhost:5001` with health checks at `/health`.
-
-### Frontend
-
-```bash
+# Start the frontend (new terminal)
 cd src/andytipster-client
 npm install
 ng serve
+# App runs at http://localhost:4200
 ```
 
-The Angular app runs on `http://localhost:4200`.
+### Configuration
 
-### Run Tests
+Key settings in `src/AndyTipster.Api/appsettings.json`:
+
+| Setting | Description |
+|---------|-------------|
+| `ConnectionStrings:DefaultConnection` | SQL Server connection |
+| `Jwt:Key` | JWT signing key (min 32 chars) |
+| `PayPal:ClientId` / `ClientSecret` | PayPal API credentials |
+| `Stripe:SecretKey` / `WebhookSecret` | Stripe API credentials |
+| `Authentication:Google:ClientId` | Google OAuth |
+| `ApplicationInsights:ConnectionString` | Azure monitoring (optional) |
+
+---
+
+## API Endpoints
+
+| Module | Endpoints | Auth |
+|--------|-----------|------|
+| Auth | `/api/auth/register`, `login`, `refresh`, `2fa/*`, `social-login` | Public |
+| Users | `/api/users`, `/api/users/{id}/impersonate`, `/api/users/export` | Admin |
+| Roles | `/api/roles`, `/api/roles/assign`, `/api/roles/permissions` | Admin |
+| Profile | `/api/profile`, `/api/profile/avatar`, `/api/profile/activity` | User |
+| Plans | `/api/plans`, `/api/promo-codes` | Admin/Public |
+| Subscriptions | `/api/subscriptions`, `/api/checkout` | User |
+| Webhooks | `/api/webhooks/paypal`, `/api/webhooks/stripe` | Signature |
+| Tips | `/api/tips`, `/api/tips/feed`, `/api/tips/{id}/result` | Mixed |
+| Categories | `/api/categories` | Public |
+| CMS | `/api/cms/pages`, `/api/media`, `/api/navigation`, `/api/seo` | Admin |
+| Blog | `/api/blog` | Public/Admin |
+| Notifications | `/api/notifications`, `/api/notifications/preferences` | User |
+| Analytics | `/api/analytics/revenue`, `performance`, `public-stats` | Mixed |
+| GDPR | `/api/gdpr/export`, `/api/gdpr/delete-account` | User |
+| Audit | `/api/audit` | Super Admin |
+
+---
+
+## Design Principles
+
+- **Clean Architecture** — Domain at the center, no framework dependencies leak inward
+- **CQRS-lite** — Read/write separation at the service layer
+- **Event-driven webhooks** — Idempotent, signature-verified, dead-letter handling
+- **OnPush everything** — Angular components use OnPush change detection
+- **Signals + NgRx** — Reactive state management with predictable data flow
+- **Mobile-first** — Responsive design, PWA, bottom nav, offline support
+- **Security by default** — Rate limiting, CSP, HSTS, parameterized queries, no secrets in code
+- **Accessibility** — WCAG AA contrast, ARIA labels, keyboard navigation, axe-core testing
+
+---
+
+## Testing
 
 ```bash
-# Angular unit tests
-cd src/andytipster-client
+# Backend build
+cd src && dotnet build
+
+# Frontend build
+cd src/andytipster-client && ng build
+
+# Frontend unit tests (76 specs)
 ng test --watch=false --browsers=ChromeHeadless
 
-# .NET tests (when added)
-cd src
-dotnet test
+# Accessibility tests
+npm run test:a11y
 ```
 
-## Build Phases
+---
 
-| Phase | Focus | Status |
-|-------|-------|--------|
-| 1 | Foundation — scaffolding, auth, roles, user management, UI system | 🟡 In Progress |
-| 2 | Payments — PayPal, Stripe, checkout, plan builder | ⬜ Planned |
-| 3 | CMS — page builder, media library, SEO, navigation | ⬜ Planned |
-| 4 | Tips Engine — creation, categories, results, P&L, blog | ⬜ Planned |
-| 5 | Engagement — social components, help bot, notifications, referrals | ⬜ Planned |
-| 6 | Analytics & Compliance — dashboards, GDPR, cookies, AI imagery | ⬜ Planned |
-| 7 | PWA & Launch — offline support, mobile optimisation, go-live | ⬜ Planned |
+## Deployment
+
+Designed for Azure App Service with:
+- Azure SQL (geo-redundant backups)
+- Azure Blob Storage + CDN for media
+- Azure Application Insights for monitoring
+- Azure Key Vault for secrets
+
+---
+
+## Roadmap
+
+- [ ] CI/CD pipeline (GitHub Actions → Azure)
+- [ ] E2E tests with Playwright
+- [ ] Real-time WebSocket for live odds/results
+- [ ] Mobile app (Capacitor or .NET MAUI)
+- [ ] Multi-language support (i18n)
+- [ ] AI-powered tip analysis
+
+---
 
 ## License
 
-See [LICENSE](LICENSE) for details.
+This project is licensed under the MIT License — see [LICENSE](LICENSE) for details.
+
+---
+
+<p align="center">
+  Built with ❤️ for the horse racing community
+</p>
