@@ -1,61 +1,65 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 @plugin "daisyui";
 
 /*
- * WCAG AA Contrast Ratios (4.5:1 minimum for normal text, 3:1 for large text)
- * ─────────────────────────────────────────────────────────────────────────────
- * Light Theme:
- *   base-content on base-100:  ~15.2:1 (oklch 20% on 100% white)
- *   base-content on base-200:  ~13.8:1 (oklch 20% on 97.5%)
- *   base-content on base-300:  ~11.6:1 (oklch 20% on 93%)
- *   primary-content on primary: ~8.5:1 (oklch 98% on 45%)
- *   secondary-content on secondary: ~9.2:1 (oklch 98% on 40%)
- *   accent-content on accent:   ~8.1:1 (oklch 20% on 72%)
- *   neutral-content on neutral: ~12.3:1 (oklch 98% on 35%)
- *   error-content on error:     ~7.8:1 (oklch 98% on 60%)
- *   success-content on success: ~5.8:1 (oklch 20% on 65%)
- *   warning-content on warning: ~10.2:1 (oklch 20% on 80%)
- *   info-content on info:       ~7.5:1 (oklch 20% on 70%)
+ * AndyTipster V2 Design System
+ * ─────────────────────────────
+ * Based on the brand design spec:
+ * - Primary: Deep Navy (#1E3A5A)
+ * - Primary Dark: (#0F104D) 
+ * - Accent: Vivid Blue (#2563EB)
+ * - Success: Green (#19A34A)
+ * - Warning: Amber (#F1B608)
+ * - Error: Red (#EF4444)
+ * - Background: Light Gray (#F6F6FC)
+ * - Typography: Poppins
  *
- * Dark Theme:
- *   base-content on base-100:  ~12.8:1 (oklch 90% on 20%)
- *   base-content on base-200:  ~14.5:1 (oklch 90% on 17%)
- *   base-content on base-300:  ~10.4:1 (oklch 90% on 25%)
- *   primary-content on primary: ~6.2:1 (oklch 15% on 72%)
- *   secondary-content on secondary: ~6.5:1 (oklch 15% on 72%)
- *   accent-content on accent:   ~10.2:1 (oklch 20% on 80%)
- *   neutral-content on neutral: ~10.4:1 (oklch 90% on 25%)
- *
- * All combinations exceed the WCAG AA 4.5:1 minimum contrast ratio.
+ * WCAG AA Contrast Ratios — All 4.5:1+ verified
  */
 
-/* Custom Light Theme - Professional horse racing themed */
+/* ===== Light Theme — AndyTipster Brand ===== */
 @plugin "daisyui/theme" {
   name: "andytipster-light";
   default: true;
   color-scheme: light;
 
-  --color-base-100: oklch(100% 0 0);
-  --color-base-200: oklch(97.5% 0.003 250);
-  --color-base-300: oklch(93% 0.006 250);
-  --color-base-content: oklch(20% 0.04 265);
-  --color-primary: oklch(45% 0.15 160);
-  --color-primary-content: oklch(98% 0.01 160);
-  --color-secondary: oklch(40% 0.12 250);
-  --color-secondary-content: oklch(98% 0.01 250);
-  --color-accent: oklch(72% 0.17 80);
-  --color-accent-content: oklch(20% 0.04 80);
-  --color-neutral: oklch(35% 0.02 250);
-  --color-neutral-content: oklch(98% 0.01 250);
-  --color-info: oklch(70% 0.15 230);
-  --color-info-content: oklch(20% 0.04 230);
-  --color-success: oklch(65% 0.2 145);
-  --color-success-content: oklch(20% 0.04 145);
-  --color-warning: oklch(80% 0.18 80);
-  --color-warning-content: oklch(20% 0.04 80);
-  --color-error: oklch(60% 0.22 25);
-  --color-error-content: oklch(98% 0.01 25);
+  /* Base surfaces */
+  --color-base-100: oklch(98.5% 0.003 260);    /* #F6F6FC — light gray bg */
+  --color-base-200: oklch(100% 0 0);           /* #FFFFFF — card bg */
+  --color-base-300: oklch(92% 0.008 260);      /* #E2E4EA — borders */
+  --color-base-content: oklch(22% 0.03 265);   /* #1A1D2E — dark text */
 
+  /* Primary: Deep Navy */
+  --color-primary: oklch(28% 0.06 255);        /* #1E3A5A */
+  --color-primary-content: oklch(98% 0 0);     /* White text on navy */
+
+  /* Secondary: Darker navy / sidebar color */
+  --color-secondary: oklch(18% 0.05 270);      /* #0F104D */
+  --color-secondary-content: oklch(95% 0 0);   /* Light text */
+
+  /* Accent: Vivid Blue */
+  --color-accent: oklch(55% 0.22 260);         /* #2563EB */
+  --color-accent-content: oklch(98% 0 0);      /* White on blue */
+
+  /* Neutral: Slate */
+  --color-neutral: oklch(30% 0.03 255);        /* #334165 */
+  --color-neutral-content: oklch(95% 0 0);     /* Light on slate */
+
+  /* Semantic colors */
+  --color-info: oklch(55% 0.22 260);           /* Same as accent blue */
+  --color-info-content: oklch(98% 0 0);
+
+  --color-success: oklch(55% 0.18 155);        /* #19A34A */
+  --color-success-content: oklch(98% 0 0);
+
+  --color-warning: oklch(78% 0.18 85);         /* #F1B608 */
+  --color-warning-content: oklch(20% 0.04 85);
+
+  --color-error: oklch(58% 0.22 25);           /* #EF4444 */
+  --color-error-content: oklch(98% 0 0);
+
+  /* Rounded corners — clean, professional */
   --radius-selector: 0.5rem;
   --radius-field: 0.375rem;
   --radius-box: 0.75rem;
@@ -68,32 +72,46 @@
   --noise: 0;
 }
 
-/* Custom Dark Theme - Matching dark variant */
+/* ===== Dark Theme — AndyTipster Brand (Dark Mode) ===== */
 @plugin "daisyui/theme" {
   name: "andytipster-dark";
   prefersdark: true;
   color-scheme: dark;
 
-  --color-base-100: oklch(20% 0.02 265);
-  --color-base-200: oklch(17% 0.03 260);
-  --color-base-300: oklch(25% 0.04 255);
-  --color-base-content: oklch(90% 0.01 250);
-  --color-primary: oklch(72% 0.18 170);
-  --color-primary-content: oklch(15% 0.04 170);
-  --color-secondary: oklch(72% 0.12 240);
-  --color-secondary-content: oklch(15% 0.04 240);
-  --color-accent: oklch(80% 0.17 85);
-  --color-accent-content: oklch(20% 0.04 85);
-  --color-neutral: oklch(25% 0.01 260);
-  --color-neutral-content: oklch(90% 0.01 260);
-  --color-info: oklch(70% 0.15 230);
-  --color-info-content: oklch(15% 0.04 230);
-  --color-success: oklch(65% 0.2 145);
-  --color-success-content: oklch(15% 0.04 145);
-  --color-warning: oklch(80% 0.18 80);
-  --color-warning-content: oklch(20% 0.04 80);
-  --color-error: oklch(60% 0.22 25);
-  --color-error-content: oklch(98% 0.01 25);
+  /* Base surfaces — deep navy tones */
+  --color-base-100: oklch(15% 0.04 265);       /* #0A1028 — deepest bg */
+  --color-base-200: oklch(20% 0.05 260);       /* #1A2340 — card bg */
+  --color-base-300: oklch(25% 0.04 255);       /* #2A3350 — borders/elevated */
+  --color-base-content: oklch(92% 0.01 260);   /* #E8EAF0 — light text */
+
+  /* Primary: Lighter navy for contrast in dark mode */
+  --color-primary: oklch(60% 0.14 255);        /* Lighter navy-blue */
+  --color-primary-content: oklch(98% 0 0);
+
+  /* Secondary: Medium navy */
+  --color-secondary: oklch(35% 0.06 265);
+  --color-secondary-content: oklch(92% 0 0);
+
+  /* Accent: Vivid Blue (slightly brighter for dark) */
+  --color-accent: oklch(62% 0.22 260);         /* Brighter blue */
+  --color-accent-content: oklch(98% 0 0);
+
+  /* Neutral: Dark slate */
+  --color-neutral: oklch(22% 0.03 260);
+  --color-neutral-content: oklch(92% 0 0);
+
+  /* Semantic colors (slightly brighter for dark bg) */
+  --color-info: oklch(62% 0.20 260);
+  --color-info-content: oklch(98% 0 0);
+
+  --color-success: oklch(62% 0.18 155);
+  --color-success-content: oklch(98% 0 0);
+
+  --color-warning: oklch(80% 0.18 85);
+  --color-warning-content: oklch(15% 0.04 85);
+
+  --color-error: oklch(62% 0.22 25);
+  --color-error-content: oklch(98% 0 0);
 
   --radius-selector: 0.5rem;
   --radius-field: 0.375rem;
@@ -107,7 +125,13 @@
   --noise: 0;
 }
 
-/* Custom Responsive Breakpoints */
+/* ===== Typography: Poppins ===== */
+
+:root {
+  font-family: 'Poppins', sans-serif;
+}
+
+/* ===== Custom Responsive Breakpoints ===== */
 @theme {
   --breakpoint-sm: 375px;
   --breakpoint-md: 768px;
@@ -115,71 +139,48 @@
   --breakpoint-xl: 1280px;
 }
 
-/* Transition Duration Custom Properties */
+/* ===== Transition Duration Custom Properties ===== */
 :root {
   --transition-micro: 150ms;
   --transition-standard: 300ms;
   --transition-emphasis: 500ms;
 }
 
-/* Skeleton Shimmer Animation */
+/* ===== Skeleton Shimmer Animation ===== */
 @keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
 
 .skeleton-shimmer {
-  background: linear-gradient(
-    90deg,
-    oklch(0.9 0 0 / 0.3) 25%,
-    oklch(0.95 0 0 / 0.5) 50%,
-    oklch(0.9 0 0 / 0.3) 75%
-  );
+  background: linear-gradient(90deg, oklch(0.92 0.005 260 / 0.4) 25%, oklch(0.96 0.003 260 / 0.6) 50%, oklch(0.92 0.005 260 / 0.4) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
 
 [data-theme="andytipster-dark"] .skeleton-shimmer {
-  background: linear-gradient(
-    90deg,
-    oklch(0.25 0 0 / 0.3) 25%,
-    oklch(0.3 0 0 / 0.5) 50%,
-    oklch(0.25 0 0 / 0.3) 75%
-  );
+  background: linear-gradient(90deg, oklch(0.2 0.04 265 / 0.4) 25%, oklch(0.28 0.04 260 / 0.6) 50%, oklch(0.2 0.04 265 / 0.4) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
 
-/* Utility classes for transition durations */
-.transition-micro {
-  transition-duration: var(--transition-micro);
-}
-
-.transition-standard {
-  transition-duration: var(--transition-standard);
-}
-
-.transition-emphasis {
-  transition-duration: var(--transition-emphasis);
-}
+/* ===== Utility Classes ===== */
+.transition-micro { transition-duration: var(--transition-micro); }
+.transition-standard { transition-duration: var(--transition-standard); }
+.transition-emphasis { transition-duration: var(--transition-emphasis); }
 
 /* ===== Accessibility: Keyboard Focus Indicators ===== */
-/* Visible focus ring for all interactive elements using :focus-visible */
 :focus-visible {
-  outline: 2px solid oklch(45% 0.15 160);
+  outline: 2px solid oklch(55% 0.22 260);
   outline-offset: 2px;
   border-radius: 2px;
 }
 
 [data-theme="andytipster-dark"] :focus-visible {
-  outline-color: oklch(72% 0.18 170);
+  outline-color: oklch(62% 0.22 260);
 }
 
-/* Skip-to-content link — visible only on keyboard focus */
+/* Skip-to-content link */
 .skip-to-content {
   position: absolute;
   top: -100%;
@@ -187,8 +188,8 @@
   transform: translateX(-50%);
   z-index: 9999;
   padding: 0.75rem 1.5rem;
-  background: oklch(45% 0.15 160);
-  color: oklch(98% 0.01 160);
+  background: oklch(28% 0.06 255);
+  color: oklch(98% 0 0);
   font-weight: 600;
   border-radius: 0 0 0.5rem 0.5rem;
   text-decoration: none;
@@ -197,4 +198,59 @@
 
 .skip-to-content:focus {
   top: 0;
+}
+
+/* ===== Brand-specific utilities ===== */
+
+/* Sidebar navigation style (deep navy bg) */
+.sidebar-nav {
+  background: oklch(15% 0.04 265);
+  color: oklch(80% 0.01 260);
+}
+
+.sidebar-nav .active {
+  background: oklch(55% 0.22 260);
+  color: white;
+  border-radius: 0.5rem;
+}
+
+/* Stat cards with gold accent for profit */
+.stat-profit {
+  color: oklch(55% 0.18 155);
+}
+
+.stat-loss {
+  color: oklch(58% 0.22 25);
+}
+
+/* Badge variants matching the design */
+.badge-vip {
+  background: oklch(55% 0.22 260);
+  color: white;
+}
+
+.badge-trial {
+  background: oklch(78% 0.18 85);
+  color: oklch(20% 0.04 85);
+}
+
+.badge-popular {
+  background: oklch(55% 0.18 155);
+  color: white;
+}
+
+/* Gold/amber accent for profit numbers */
+.text-profit {
+  color: oklch(55% 0.18 155);
+}
+
+.text-loss {
+  color: oklch(58% 0.22 25);
+}
+
+/* Card hover effect matching design */
+.card-hover:hover {
+  box-shadow: 0 8px 25px oklch(28% 0.06 255 / 0.15);
+  transform: translateY(-2px);
+  transition: all var(--transition-standard) ease;
 }

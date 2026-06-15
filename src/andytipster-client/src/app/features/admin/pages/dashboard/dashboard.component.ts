@@ -17,23 +17,23 @@ import { SubscriptionService, AdminDashboardSummary } from '../../../../core/ser
       } @else if (summary()) {
         <!-- Summary Cards -->
         <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
-          <div class="stat bg-base-100 shadow rounded-box">
+          <div class="stat bg-base-200 shadow rounded-box border-l-4 border-primary">
             <div class="stat-title">Subscribers</div>
             <div class="stat-value text-primary">{{ summary()!.totalSubscribers }}</div>
           </div>
-          <div class="stat bg-base-100 shadow rounded-box">
+          <div class="stat bg-base-200 shadow rounded-box border-l-4 border-success">
             <div class="stat-title">MRR</div>
             <div class="stat-value text-success">£{{ summary()!.mrr | number:'1.0-0' }}</div>
           </div>
-          <div class="stat bg-base-100 shadow rounded-box">
+          <div class="stat bg-base-200 shadow rounded-box border-l-4 border-warning">
             <div class="stat-title">Tips Today</div>
-            <div class="stat-value">{{ summary()!.tipsPublishedToday }}</div>
+            <div class="stat-value text-warning">{{ summary()!.tipsPublishedToday }}</div>
           </div>
-          <div class="stat bg-base-100 shadow rounded-box">
+          <div class="stat bg-base-200 shadow rounded-box border-l-4 border-info">
             <div class="stat-title">Recent Signups</div>
             <div class="stat-value text-info">{{ summary()!.recentSignups }}</div>
           </div>
-          <div class="stat bg-base-100 shadow rounded-box">
+          <div class="stat bg-base-200 shadow rounded-box border-l-4 border-error">
             <div class="stat-title">Payment Alerts</div>
             <div class="stat-value" [class.text-error]="summary()!.paymentAlerts > 0">{{ summary()!.paymentAlerts }}</div>
           </div>

@@ -25,16 +25,16 @@ export interface NavItem {
   standalone: true,
   imports: [CommonModule, RouterLink, RouterLinkActive, ThemeToggleComponent],
   template: `
-    <nav class="navbar bg-base-100 shadow-sm sticky top-0 z-50" aria-label="Main navigation">
+    <nav class="navbar bg-primary shadow-lg sticky top-0 z-50" aria-label="Main navigation">
       <div class="navbar-start">
         <!-- Mobile menu toggle -->
         <div class="dropdown">
-          <label tabindex="0" class="btn btn-ghost lg:hidden" aria-label="Open menu">
+          <label tabindex="0" class="btn btn-ghost text-primary-content lg:hidden" aria-label="Open menu">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16" />
             </svg>
           </label>
-          <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52" role="menu">
+          <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-200 rounded-box w-52" role="menu">
             @for (item of visibleNavItems; track item.route) {
               <li role="none">
                 <a [routerLink]="item.route" routerLinkActive="active" role="menuitem">{{ item.label }}</a>
@@ -42,7 +42,10 @@ export interface NavItem {
             }
           </ul>
         </div>
-        <a routerLink="/" class="btn btn-ghost text-xl font-bold">AndyTipster</a>
+        <a routerLink="/" class="btn btn-ghost text-xl font-bold text-primary-content hover:bg-primary-content/10">
+          <span class="text-warning font-bold">AT</span>
+          <span class="ml-1">ANDYTIPSTER</span>
+        </a>
       </div>
 
       <!-- Desktop nav links -->
@@ -50,7 +53,9 @@ export interface NavItem {
         <ul class="menu menu-horizontal px-1" role="menubar">
           @for (item of visibleNavItems; track item.route) {
             <li role="none">
-              <a [routerLink]="item.route" routerLinkActive="active" role="menuitem">{{ item.label }}</a>
+              <a [routerLink]="item.route" routerLinkActive="active"
+                 class="text-primary-content/80 hover:text-primary-content hover:bg-primary-content/10"
+                 role="menuitem">{{ item.label }}</a>
             </li>
           }
         </ul>
@@ -63,7 +68,7 @@ export interface NavItem {
           <!-- Authenticated user dropdown -->
           <div class="dropdown dropdown-end">
             <label tabindex="0" class="btn btn-ghost btn-circle avatar" aria-label="User menu">
-              <div class="w-10 rounded-full bg-primary text-primary-content flex items-center justify-center">
+              <div class="w-10 rounded-full bg-secondary text-secondary-content flex items-center justify-center">
                 @if (userAvatar) {
                   <img [src]="userAvatar" [alt]="userDisplayName + ' avatar'" class="rounded-full" />
                 } @else {
@@ -71,7 +76,7 @@ export interface NavItem {
                 }
               </div>
             </label>
-            <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52" role="menu">
+            <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-200 rounded-box w-52" role="menu">
               <li class="menu-title">
                 <span>{{ userDisplayName }}</span>
               </li>
@@ -87,8 +92,8 @@ export interface NavItem {
           </div>
         } @else {
           <!-- Guest buttons -->
-          <a routerLink="/auth/login" class="btn btn-ghost btn-sm">Sign In</a>
-          <a routerLink="/auth/register" class="btn btn-primary btn-sm">Sign Up</a>
+          <a routerLink="/auth/login" class="btn btn-ghost btn-sm text-primary-content hover:bg-primary-content/10">Sign In</a>
+          <a routerLink="/auth/register" class="btn btn-warning btn-sm text-warning-content">Sign Up</a>
         }
       </div>
     </nav>

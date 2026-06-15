@@ -24,23 +24,23 @@ interface FaqItem {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <!-- Hero Section -->
-    <section class="hero min-h-[80vh] relative overflow-hidden" [class.parallax-active]="scrollY() > 100">
-      <div class="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/20"></div>
+    <section class="hero min-h-[80vh] relative overflow-hidden bg-gradient-to-br from-primary to-secondary" [class.parallax-active]="scrollY() > 100">
+      <div class="absolute inset-0 bg-[url('/assets/hero-pattern.svg')] opacity-5"></div>
       <div class="hero-content text-center relative z-10" [style.transform]="'translateY(' + scrollY() * 0.3 + 'px)'">
         <div class="max-w-2xl animate-fade-in">
-          <h1 class="text-5xl md:text-6xl font-bold text-base-content mb-4">
+          <h1 class="text-5xl md:text-6xl font-bold text-primary-content mb-4">
             AndyTipster
           </h1>
-          <p class="text-xl md:text-2xl text-base-content/80 mb-2">
+          <p class="text-xl md:text-2xl text-primary-content/90 mb-2">
             UK & Ireland Horse Racing Tips
           </p>
-          <p class="text-lg text-base-content/60 mb-8">
+          <p class="text-lg text-primary-content/70 mb-8">
             Expert selections backed by data-driven analysis. Join thousands of profitable punters.
           </p>
-          <a routerLink="/auth/register" class="btn btn-primary btn-lg shadow-lg hover:scale-105 transition-transform">
+          <a routerLink="/auth/register" class="btn btn-warning btn-lg shadow-lg hover:scale-105 transition-transform text-warning-content">
             Start Winning Today
           </a>
-          <p class="text-sm text-base-content/50 mt-4">No commitment required. Cancel anytime.</p>
+          <p class="text-sm text-primary-content/50 mt-4">No commitment required. Cancel anytime.</p>
         </div>
       </div>
     </section>
@@ -49,20 +49,20 @@ interface FaqItem {
     <section class="py-16 bg-base-200" [class.animate-slide-up]="scrollY() > 200">
       <div class="container mx-auto px-4">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-          <div class="stat place-items-center">
-            <div class="stat-value text-primary">87%</div>
+          <div class="stat place-items-center bg-base-200 rounded-box">
+            <div class="stat-value text-warning">87%</div>
             <div class="stat-desc">Strike Rate</div>
           </div>
-          <div class="stat place-items-center">
-            <div class="stat-value text-secondary">£2,340</div>
+          <div class="stat place-items-center bg-base-200 rounded-box">
+            <div class="stat-value text-warning">£2,340</div>
             <div class="stat-desc">Avg Monthly Profit</div>
           </div>
-          <div class="stat place-items-center">
-            <div class="stat-value text-accent">1,200+</div>
+          <div class="stat place-items-center bg-base-200 rounded-box">
+            <div class="stat-value text-warning">1,200+</div>
             <div class="stat-desc">Active Subscribers</div>
           </div>
-          <div class="stat place-items-center">
-            <div class="stat-value">5 yrs</div>
+          <div class="stat place-items-center bg-base-200 rounded-box">
+            <div class="stat-value text-warning">5 yrs</div>
             <div class="stat-desc">Verified Track Record</div>
           </div>
         </div>
@@ -200,7 +200,7 @@ interface FaqItem {
       <div class="container mx-auto px-4">
         <h2 class="text-3xl font-bold mb-4">Ready to Start Winning?</h2>
         <p class="text-lg opacity-90 mb-8">Join AndyTipster today and get expert racing tips delivered daily.</p>
-        <a routerLink="/auth/register" class="btn btn-lg bg-white text-primary hover:bg-gray-100">
+        <a routerLink="/auth/register" class="btn btn-warning btn-lg text-warning-content shadow-lg hover:scale-105 transition-transform">
           Get Started Free
         </a>
       </div>

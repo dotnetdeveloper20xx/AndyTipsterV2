@@ -13,7 +13,7 @@ interface NavItem {
   imports: [RouterLink, RouterLinkActive],
   template: `
     <nav
-      class="btm-nav btm-nav-md lg:hidden z-40"
+      class="btm-nav btm-nav-md lg:hidden z-40 bg-secondary border-t border-secondary-content/10"
       aria-label="Mobile navigation"
     >
       @for (item of navItems; track item.route) {
@@ -21,7 +21,7 @@ interface NavItem {
           [routerLink]="item.route"
           routerLinkActive="active"
           [routerLinkActiveOptions]="{ exact: item.route === '/' }"
-          class="text-base-content/70"
+          class="text-secondary-content/60 hover:text-secondary-content"
           [attr.aria-label]="item.label"
         >
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -61,8 +61,9 @@ interface NavItem {
       display: contents;
     }
     .btm-nav a.active {
-      color: oklch(var(--p));
-      border-top-color: oklch(var(--p));
+      color: oklch(var(--a));
+      border-top-color: oklch(var(--a));
+      background: transparent;
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
