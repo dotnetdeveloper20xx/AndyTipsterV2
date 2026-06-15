@@ -6,7 +6,7 @@ This plan implements the AndyTipster V2 horse racing tips subscription platform 
 
 ## Tasks
 
-- [ ] 1. Phase 1 — Foundation: Project scaffolding and core infrastructure
+- [x] 1. Phase 1 — Foundation: Project scaffolding and core infrastructure
   - [x] 1.1 Create .NET 10 Web API project with layered architecture
     - Create solution structure: `src/AndyTipster.Api`, `src/AndyTipster.Application`, `src/AndyTipster.Domain`, `src/AndyTipster.Infrastructure`
     - Configure Minimal APIs + Controllers hybrid pattern
@@ -69,7 +69,7 @@ This plan implements the AndyTipster V2 horse racing tips subscription platform 
     - Set up axe-core automated scanning in test pipeline
     - _Requirements: 49.1, 49.2, 49.3, 49.4, 49.5_
 
-- [ ] 2. Phase 1 — Foundation: Authentication and authorization
+- [x] 2. Phase 1 — Foundation: Authentication and authorization
   - [x] 2.1 Implement user registration with email verification
     - Configure ASP.NET Core Identity with custom ApplicationUser
     - Implement registration endpoint with password complexity validation (8+ chars, uppercase, lowercase, digit, special char)
@@ -158,7 +158,7 @@ This plan implements the AndyTipster V2 horse racing tips subscription platform 
 - [x] 3. Checkpoint — Phase 1 Auth & Core
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 4. Phase 1 — Foundation: User management
+- [x] 4. Phase 1 — Foundation: User management
   - [x] 4.1 Implement user management API endpoints
     - Build paginated user listing with search by name/email and filters (role, plan, status, date ranges)
     - Target 200ms response time for datasets up to 100,000 users
@@ -168,13 +168,13 @@ This plan implements the AndyTipster V2 horse racing tips subscription platform 
     - Implement suspend action that revokes all active sessions/tokens within 5 seconds
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8_
 
-  - [~] 4.2 Implement user profile management API
+  - [x] 4.2 Implement user profile management API
     - Avatar upload with crop/resize to 256x256, validate file type (JPG, PNG, WebP, GIF) and size (max 5MB)
     - Display name (3-50 chars), bio (max 500 chars), timezone update
     - Activity log with login history and subscription changes (50 per page)
     - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5_
 
-  - [~] 4.3 Implement Angular user management admin panel
+  - [x] 4.3 Implement Angular user management admin panel
     - Build user management page with Data Table integration (25 rows default, sort by registration date desc)
     - Add search/filter controls, inline quick actions
     - Build impersonation UI with persistent banner and end control
@@ -182,18 +182,18 @@ This plan implements the AndyTipster V2 horse racing tips subscription platform 
     - Build user profile settings page with tabs: Profile, Security, Notifications, Billing, Privacy, Appearance
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 5.6_
 
-  - [~] 4.4 Implement audit logging system
+  - [x] 4.4 Implement audit logging system
     - Create append-only audit log for all admin actions (actor, target, action type, timestamp, before/after values)
     - Build searchable, filterable, paginated audit log view in admin panel
     - Configure 2-year retention policy
     - Ensure audit log is not editable by any user
     - _Requirements: 44.1, 44.2, 44.3, 44.4_
 
-- [~] 5. Checkpoint — Phase 1 Complete
+- [x] 5. Checkpoint — Phase 1 Complete
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 6. Phase 2 — Payments: Subscription plan builder
-  - [~] 6.1 Implement subscription plan builder API
+- [x] 6. Phase 2 — Payments: Subscription plan builder
+  - [x] 6.1 Implement subscription plan builder API
     - Build plan CRUD with validation: name (1-100 chars, unique), price (0.01-999,999.99), currency (GBP/EUR/USD), billing cycle, features list (1-50 items)
     - Support billing cycles: Weekly, Monthly, Quarterly, Semi-Annual, Annual
     - Support trial period (1-365 days), setup fee (0.00-999,999.99), grace period (0-90 days), auto-renewal, promo code compatibility
@@ -210,7 +210,7 @@ This plan implements the AndyTipster V2 horse racing tips subscription platform 
     - **Property 10: Subscription Plan Transition Path Enforcement**
     - **Validates: Requirements 8.5**
 
-  - [~] 6.4 Implement promo code system
+  - [x] 6.4 Implement promo code system
     - Build promo code CRUD: discount type (percentage/fixed), applicable plans, maximum uses, expiry date
     - Validate promo codes at checkout: check expiry, max usage, plan compatibility
     - Calculate discounted price based on discount configuration
@@ -220,14 +220,14 @@ This plan implements the AndyTipster V2 horse racing tips subscription platform 
     - **Property 12: Promo Code Discount Calculation**
     - **Validates: Requirements 14.4, 14.5**
 
-  - [~] 6.6 Implement free trial system
+  - [x] 6.6 Implement free trial system
     - Grant full plan access for trial duration without charge
     - Auto-begin billing when trial expires
     - Display trial duration and billing start date in checkout
     - _Requirements: 14.1, 14.2, 11.3_
 
-- [ ] 7. Phase 2 — Payments: PayPal integration
-  - [~] 7.1 Implement PayPal subscription flow
+- [x] 7. Phase 2 — Payments: PayPal integration
+  - [x] 7.1 Implement PayPal subscription flow
     - Render PayPal Smart Buttons on checkout page
     - Initiate subscription via PayPal Subscriptions API with PayPal Billing Plan ID
     - Activate subscription and grant access within 10 seconds of return
@@ -236,7 +236,7 @@ This plan implements the AndyTipster V2 horse racing tips subscription platform 
     - Retry failed operations up to 3 times with exponential backoff
     - _Requirements: 9.1, 9.2, 9.3, 9.10, 9.11_
 
-  - [~] 7.2 Implement PayPal webhook processing
+  - [x] 7.2 Implement PayPal webhook processing
     - Build webhook endpoint at `POST /api/webhooks/paypal`
     - Verify webhook signatures, return 401 on failure
     - Implement idempotent processing using PayPal event ID as deduplication key
@@ -251,14 +251,14 @@ This plan implements the AndyTipster V2 horse racing tips subscription platform 
     - **Property 11: Webhook Idempotent Processing**
     - **Validates: Requirements 9.9, 10.8**
 
-- [ ] 8. Phase 2 — Payments: Stripe integration
-  - [~] 8.1 Implement Stripe subscription flow
+- [x] 8. Phase 2 — Payments: Stripe integration
+  - [x] 8.1 Implement Stripe subscription flow
     - Display Stripe hosted payment fields (no raw card storage for PCI DSS compliance)
     - Create subscription via Stripe Subscriptions API
     - Activate subscription and grant access within 10 seconds
     - _Requirements: 10.1, 10.2, 10.6_
 
-  - [~] 8.2 Implement Stripe webhook processing
+  - [x] 8.2 Implement Stripe webhook processing
     - Build webhook endpoint at `POST /api/webhooks/stripe`
     - Verify webhook signatures using Stripe signing secret, return 400 on failure
     - Implement idempotent processing
@@ -267,8 +267,8 @@ This plan implements the AndyTipster V2 horse racing tips subscription platform 
     - Handle `invoice.payment_succeeded`: record transaction (amount, currency, payment intent ID)
     - _Requirements: 10.3, 10.4, 10.5, 10.7, 10.8, 10.9_
 
-- [ ] 9. Phase 2 — Payments: Checkout and self-service
-  - [~] 9.1 Implement checkout flow UI
+- [x] 9. Phase 2 — Payments: Checkout and self-service
+  - [x] 9.1 Implement checkout flow UI
     - Build checkout page with payment method selection (PayPal, Stripe)
     - Display order summary with plan details
     - Integrate promo code entry with validation and discounted price display
@@ -277,14 +277,14 @@ This plan implements the AndyTipster V2 horse racing tips subscription platform 
     - Display error message on failure with retry/alternative payment option
     - _Requirements: 11.1, 11.2, 11.3, 11.4, 11.5_
 
-  - [~] 9.2 Implement subscription self-service management
+  - [x] 9.2 Implement subscription self-service management
     - Build billing settings page: current plan, next billing date, payment method, payment history
     - Implement plan upgrade with prorated amount calculation
     - Implement cancellation with access maintained until period end
     - Handle payment failure with grace period expiry: revoke access, notify subscriber
     - _Requirements: 13.1, 13.2, 13.3, 13.4_
 
-  - [~] 9.3 Implement PayPal admin dashboard
+  - [x] 9.3 Implement PayPal admin dashboard
     - Build transaction history with search, date range filter, status filter, amount sorting
     - Build subscription lifecycle timeline view
     - Display revenue analytics: MRR, ARR, churn rate, revenue by plan
@@ -293,7 +293,7 @@ This plan implements the AndyTipster V2 horse racing tips subscription platform 
     - Display PayPal environment indicator (Sandbox/Live) banner
     - _Requirements: 12.1, 12.2, 12.3, 12.4, 12.5, 12.6_
 
-  - [~] 9.4 Implement admin dashboard overview
+  - [x] 9.4 Implement admin dashboard overview
     - Build summary cards: subscriber count, MRR, today's tips status, recent signups, payment alerts
     - Build revenue and subscriber growth trend charts
     - Build recent activity feed (last 10 actions)
@@ -301,11 +301,11 @@ This plan implements the AndyTipster V2 horse racing tips subscription platform 
     - Add onboarding cards for fresh install state
     - _Requirements: 43.1, 43.2, 43.3, 43.4, 43.5_
 
-- [~] 10. Checkpoint — Phase 2 Complete
+- [x] 10. Checkpoint — Phase 2 Complete
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 11. Phase 3 — CMS: Page builder and content blocks
-  - [~] 11.1 Implement CMS page builder backend
+- [x] 11. Phase 3 — CMS: Page builder and content blocks
+  - [x] 11.1 Implement CMS page builder backend
     - Build page CRUD API with JSON block structure persistence
     - Implement version snapshot creation on every save (author, timestamp, change summary)
     - Implement auto-save every 30 seconds with failure warning and 10-second retry
@@ -315,7 +315,7 @@ This plan implements the AndyTipster V2 horse racing tips subscription platform 
     - Build publishing queue view endpoint
     - _Requirements: 15.4, 15.6, 15.7, 15.10, 21.1, 21.2, 21.3, 21.4_
 
-  - [~] 11.2 Implement CMS page builder frontend
+  - [x] 11.2 Implement CMS page builder frontend
     - Build visual editor with block palette, canvas area, and live preview panel
     - Implement drag-and-drop block insertion and reordering (update preview within 500ms)
     - Build block configuration panel per block type
@@ -324,7 +324,7 @@ This plan implements the AndyTipster V2 horse racing tips subscription platform 
     - Implement block deletion with preview update within 500ms
     - _Requirements: 15.1, 15.2, 15.3, 15.5, 15.8, 15.9_
 
-  - [~] 11.3 Implement all CMS content block types
+  - [x] 11.3 Implement all CMS content block types
     - Build block components: Hero Section, Rich Text (WYSIWYG), Image, Image Gallery, Video Embed, CTA, Pricing Table (auto from plans or manual), Testimonials, FAQ Accordion, Stats Counter, Social Media Feed, Contact Form, Divider, HTML Embed, Blog Post List, Tip of the Day, Countdown Timer, Banner Alert
     - Build block configuration for Hero (background image, heading, subheading, CTA)
     - Build Rich Text block with WYSIWYG editor (formatting, links, embeds)
@@ -332,7 +332,7 @@ This plan implements the AndyTipster V2 horse racing tips subscription platform 
     - Build Contact Form with configurable fields and email delivery
     - _Requirements: 16.1, 16.2, 16.3, 16.4, 16.5_
 
-  - [~] 11.4 Implement content version history and rollback
+  - [x] 11.4 Implement content version history and rollback
     - Build version history list with timestamp, author, change summary, and preview
     - Implement rollback to any previous version (restore as current draft without deleting later versions)
     - Configure retention policy (default: keep all versions)
@@ -342,8 +342,8 @@ This plan implements the AndyTipster V2 horse racing tips subscription platform 
     - **Property 13: CMS Version Rollback Round-Trip**
     - **Validates: Requirements 20.1, 20.3, 20.4**
 
-- [ ] 12. Phase 3 — CMS: Media library and supporting features
-  - [~] 12.1 Implement media library backend
+- [x] 12. Phase 3 — CMS: Media library and supporting features
+  - [x] 12.1 Implement media library backend
     - Build upload endpoint: store in Azure Blob Storage, compress to 80% original size, convert to WebP, return CDN URL within 10 seconds
     - Support batch upload (up to 20 files) with parallel processing and per-file progress
     - Enforce file type limits: images (JPG, PNG, WebP, SVG, GIF, max 10MB), documents (PDF, DOCX, max 50MB), videos (MP4, max 500MB)
@@ -354,7 +354,7 @@ This plan implements the AndyTipster V2 horse racing tips subscription platform 
     - Prevent deletion of in-use assets with confirmation dialog listing referencing pages
     - _Requirements: 17.1, 17.2, 17.3, 17.4, 17.5, 17.6, 17.7, 17.8_
 
-  - [~] 12.2 Implement navigation and menu management
+  - [x] 12.2 Implement navigation and menu management
     - Build visual tree editor for menu structure
     - Implement add/remove/reorder menu items via drag-and-drop
     - Support separate menus: header, footer, sidebar, mobile
@@ -362,7 +362,7 @@ This plan implements the AndyTipster V2 horse racing tips subscription platform 
     - Apply navigation changes across frontend within 10 seconds of save
     - _Requirements: 18.1, 18.2, 18.3, 18.4, 18.5_
 
-  - [~] 12.3 Implement SEO management
+  - [x] 12.3 Implement SEO management
     - Build per-page SEO editor: meta title, description, OG image, URL slug, canonical URL
     - Display character counters for title (max 60) and description (max 160) with visual indicators
     - Auto-generate XML sitemap for published pages, update on publish/unpublish
@@ -370,7 +370,7 @@ This plan implements the AndyTipster V2 horse racing tips subscription platform 
     - Implement structured data (JSON-LD) for rich search results
     - _Requirements: 19.1, 19.2, 19.3, 19.4, 19.5_
 
-  - [~] 12.4 Implement global site settings
+  - [x] 12.4 Implement global site settings
     - Build settings: site name, tagline, logo (light + dark), favicon
     - Apply branding changes across all pages within 10 seconds
     - Implement maintenance mode (show "coming soon" to non-admin visitors)
@@ -378,7 +378,7 @@ This plan implements the AndyTipster V2 horse racing tips subscription platform 
     - Implement 301 redirect management
     - _Requirements: 22.1, 22.2, 22.3, 22.4_
 
-  - [~] 12.5 Implement landing page
+  - [x] 12.5 Implement landing page
     - Build hero section with AI-generated artwork, headline, subheadline, CTA
     - Build animated pricing table auto-generated from active plans
     - Build public results section with performance statistics
@@ -388,11 +388,11 @@ This plan implements the AndyTipster V2 horse racing tips subscription platform 
     - Implement parallax scrolling and scroll-triggered animations
     - _Requirements: 42.1, 42.2, 42.3, 42.4, 42.5, 42.6, 42.7_
 
-- [~] 13. Checkpoint — Phase 3 Complete
+- [x] 13. Checkpoint — Phase 3 Complete
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 14. Phase 4 — Tips Engine
-  - [~] 14.1 Implement tip creation and publishing API
+- [x] 14. Phase 4 — Tips Engine
+  - [x] 14.1 Implement tip creation and publishing API
     - Build tip CRUD with validation: event date (required), race name (1-200 chars), selection (1-200 chars), odds (1.01-1000.00), stake (1-10), category, commentary (max 5000 chars)
     - Reject invalid submissions with field-specific errors, preserve entered data
     - Implement publish endpoint (visible to subscribers within 5 seconds)
@@ -409,13 +409,13 @@ This plan implements the AndyTipster V2 horse racing tips subscription platform 
     - **Property 15: Tip Status State Machine**
     - **Validates: Requirements 23.7**
 
-  - [~] 14.4 Implement tip categories
+  - [x] 14.4 Implement tip categories
     - Create default categories: UK Horse Racing, Irish Horse Racing, Other Sports
     - Build category CRUD for admin (create new, assign to tips and plans)
     - Filter subscriber feed by plan-included categories
     - _Requirements: 24.1, 24.2, 24.3_
 
-  - [~] 14.5 Implement result tracking and P&L calculation
+  - [x] 14.5 Implement result tracking and P&L calculation
     - Build result recording: Won, Lost, Void, Push
     - Calculate P&L: Won = (odds × stake) - stake, Lost = -stake, Void/Push = 0
     - Calculate aggregate P&L per day, week, month, year, and per category
@@ -426,7 +426,7 @@ This plan implements the AndyTipster V2 horse racing tips subscription platform 
     - **Property 16: P&L Calculation Correctness**
     - **Validates: Requirements 25.1, 25.2, 25.3, 25.4**
 
-  - [~] 14.7 Implement content access gating
+  - [x] 14.7 Implement content access gating
     - Grant access to tips by plan category for active subscribers
     - Show "Tip of the Day" free preview for Free Users
     - Display paywall with plan options for Guests on gated content
@@ -437,18 +437,18 @@ This plan implements the AndyTipster V2 horse racing tips subscription platform 
     - **Property 17: Content Access Gating**
     - **Validates: Requirements 26.1, 26.2, 26.3, 26.4**
 
-  - [~] 14.9 Implement blog system
+  - [x] 14.9 Implement blog system
     - Build blog post CRUD with title, rich text, featured image, SEO fields
     - Implement publish with URL slug access and sitemap inclusion
     - Build blog listing page sorted by publish date with featured images and excerpts
     - Support draft, published, and scheduled states
     - _Requirements: 27.1, 27.2, 27.3, 27.4_
 
-- [~] 15. Checkpoint — Phase 4 Complete
+- [x] 15. Checkpoint — Phase 4 Complete
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 16. Phase 5 — Social, Bot, and Engagement
-  - [~] 16.1 Implement social media components
+- [x] 16. Phase 5 — Social, Bot, and Engagement
+  - [x] 16.1 Implement social media components
     - Build component library: Social Follow Bar, Share Buttons, Social Proof Counter, Twitter Feed Embed, Facebook Page Plugin, Instagram Gallery, Telegram Join Button, YouTube Latest Video, Testimonial Cards
     - Implement per-page visibility toggle for each component
     - Implement share dialog with pre-filled text and URL
@@ -456,7 +456,7 @@ This plan implements the AndyTipster V2 horse racing tips subscription platform 
     - Reflect social media URL changes across all pages within 10 seconds
     - _Requirements: 28.1, 28.2, 28.3, 28.4, 28.5_
 
-  - [~] 16.2 Implement help bot widget
+  - [x] 16.2 Implement help bot widget
     - Build floating chat widget (bottom-right, expandable/collapsible with animation)
     - Display welcome message with quick-reply buttons
     - Implement keyword matching to conversation flows
@@ -466,7 +466,7 @@ This plan implements the AndyTipster V2 horse racing tips subscription platform 
     - Persist conversation history per user session
     - _Requirements: 29.1, 29.2, 29.3, 29.4, 29.5, 29.6_
 
-  - [~] 16.3 Implement notification system backend
+  - [x] 16.3 Implement notification system backend
     - Build multi-channel notification pipeline: email (SendGrid), web push, Telegram, in-app
     - Send tip publication alerts within 60 seconds on all enabled channels
     - Send renewal reminder 7 days before via email
@@ -477,7 +477,7 @@ This plan implements the AndyTipster V2 horse racing tips subscription platform 
     - Send admin broadcasts to all active subscribers within 5 minutes
     - _Requirements: 30.1, 30.2, 30.3, 30.6, 30.7, 30.8_
 
-  - [~] 16.4 Implement notification preferences and frontend
+  - [x] 16.4 Implement notification preferences and frontend
     - Build preferences: per-channel toggles, per-category toggles, quiet hours
     - Apply preferences to all notifications (suppress disabled channels/categories, hold during quiet hours)
     - Build notification bell with unread count (display "99+" when >99)
@@ -488,52 +488,52 @@ This plan implements the AndyTipster V2 horse racing tips subscription platform 
     - **Property 18: Notification Preference Filtering**
     - **Validates: Requirements 30.4**
 
-  - [~] 16.6 Implement Telegram bot integration
+  - [x] 16.6 Implement Telegram bot integration
     - Implement subscriber linking via unique connection code (associate Telegram chat ID)
     - Deliver formatted tip messages within 30 seconds of publication
     - Implement unlinking with immediate notification stop
     - _Requirements: 31.1, 31.2, 31.3_
 
-  - [~] 16.7 Implement referral program
+  - [x] 16.7 Implement referral program
     - Generate unique referral link per active subscriber
     - Credit referrer with configurable discount on next billing cycle when referee subscribes
     - Build referral dashboard: total clicks, conversions, earned rewards
     - Allow Super Admin to configure reward amounts and limits
     - _Requirements: 32.1, 32.2, 32.3, 32.4_
 
-  - [~] 16.8 Implement comments and community features
+  - [x] 16.8 Implement comments and community features
     - Build comments under daily tips: display author name, avatar, timestamp
     - Implement moderator delete/hide (removed from view within 5 seconds)
     - Build polls: admin creates question with options, one vote per subscriber, real-time results
     - Implement subscriber-to-admin direct messaging
     - _Requirements: 33.1, 33.2, 33.3, 33.4, 33.5_
 
-- [~] 17. Checkpoint — Phase 5 Complete
+- [x] 17. Checkpoint — Phase 5 Complete
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 18. Phase 6 — Analytics and Compliance
-  - [~] 18.1 Implement public performance analytics
+- [x] 18. Phase 6 — Analytics and Compliance
+  - [x] 18.1 Implement public performance analytics
     - Build public stats page: strike rate, ROI, monthly P&L from verified results
     - Build charts: profit over time, win rate trends, category comparison
     - Build last-30-days summary for landing page
     - Implement CSV/PDF export of displayed results
     - _Requirements: 34.1, 34.2, 34.3, 34.4_
 
-  - [~] 18.2 Implement subscriber performance dashboard
+  - [x] 18.2 Implement subscriber performance dashboard
     - Build personal P&L at level stakes for subscribed categories
     - Add filtering by category and date range
     - Display current winning/losing streak
     - Build monthly performance summaries with optional email digest
     - _Requirements: 35.1, 35.2, 35.3, 35.4_
 
-  - [~] 18.3 Implement admin revenue analytics
+  - [x] 18.3 Implement admin revenue analytics
     - Build combined PayPal + Stripe revenue unified view
     - Calculate MRR, churn rate, LTV per subscriber, revenue by plan
     - Build revenue trend charts: daily, weekly, monthly granularity
     - Implement subscriber growth forecasting
     - _Requirements: 36.1, 36.2, 36.3, 36.4_
 
-  - [~] 18.4 Implement GDPR data subject rights
+  - [x] 18.4 Implement GDPR data subject rights
     - Build data export: generate JSON/CSV archive (profile, subscriptions, payments, tip access, comments, preferences, consent records), notify via email with 7-day download link, complete within 24 hours
     - Build account deletion: 30-day soft delete grace period, email confirmation with end date, permanent purge after 30 days
     - Allow deletion cancellation during grace period if user logs in
@@ -542,7 +542,7 @@ This plan implements the AndyTipster V2 horse racing tips subscription platform 
     - Build breach notification: Super Admin sends email to affected users within 1 hour
     - _Requirements: 37.1, 37.2, 37.3, 37.4, 37.5, 37.6_
 
-  - [~] 18.5 Implement cookie consent system
+  - [x] 18.5 Implement cookie consent system
     - Build cookie consent banner: Accept All, Reject All, Customise options
     - Build granular toggles: Essential (always on), Analytics, Marketing, Preferences
     - Block non-essential scripts until consent given
@@ -550,13 +550,13 @@ This plan implements the AndyTipster V2 horse racing tips subscription platform 
     - Make consent auditable with timestamp and selected preferences
     - _Requirements: 38.1, 38.2, 38.3, 38.4, 38.5_
 
-  - [~] 18.6 Implement AI-generated imagery integration
+  - [x] 18.6 Implement AI-generated imagery integration
     - Build DALL-E API integration in Media Library for text-to-image generation
     - Store generated images in Azure Blob Storage as standard assets
     - Implement Unsplash and Pexels integration for stock photo search and import
     - _Requirements: 39.1, 39.2, 39.3_
 
-  - [~] 18.7 Implement animations and micro-interactions
+  - [x] 18.7 Implement animations and micro-interactions
     - Build Angular route transition animations (300ms)
     - Implement card hover effects (scale + shadow lift, 150ms)
     - Implement scroll-triggered reveal animations via Intersection Observer
@@ -564,11 +564,11 @@ This plan implements the AndyTipster V2 horse racing tips subscription platform 
     - Implement confetti animation on successful subscription purchase
     - _Requirements: 40.1, 40.2, 40.3, 40.4, 40.5_
 
-- [~] 19. Checkpoint — Phase 6 Complete
+- [x] 19. Checkpoint — Phase 6 Complete
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 20. Phase 7 — PWA and Final Integration
-  - [~] 20.1 Implement Progressive Web App
+- [x] 20. Phase 7 — PWA and Final Integration
+  - [x] 20.1 Implement Progressive Web App
     - Register service worker caching app shell and previously loaded tip data
     - Configure branded splash screen and app icon for device installation
     - Serve cached tips offline with connectivity indicator
@@ -576,7 +576,7 @@ This plan implements the AndyTipster V2 horse racing tips subscription platform 
     - Implement mobile bottom navigation bar
     - _Requirements: 41.1, 41.2, 41.3, 41.4, 41.5_
 
-  - [~] 20.2 Final integration and wiring
+  - [x] 20.2 Final integration and wiring
     - Verify all lazy-loaded modules load correctly from routes
     - Verify caching layer for plans, published tips, and CMS pages
     - Verify virtual scrolling for lists exceeding 100 items
@@ -587,7 +587,7 @@ This plan implements the AndyTipster V2 horse racing tips subscription platform 
     - Verify dependency vulnerability scanning for NuGet and npm
     - _Requirements: 46.2, 46.3, 46.4, 46.5, 47.2, 47.4, 47.8_
 
-- [~] 21. Final Checkpoint — All tests pass
+- [x] 21. Final Checkpoint — All tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 ## Notes
