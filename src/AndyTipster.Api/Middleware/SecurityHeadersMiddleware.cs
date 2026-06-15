@@ -30,13 +30,15 @@ public sealed class SecurityHeadersMiddleware
         context.Response.Headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()";
 
         // Content Security Policy
+        // In development, allow connections from Angular dev server.
+        // In production, 'self' is sufficient since frontend and API share the same origin.
         context.Response.Headers["Content-Security-Policy"] =
             "default-src 'self'; " +
-            "script-src 'self'; " +
-            "style-src 'self' 'unsafe-inline'; " +
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+            "font-src 'self' https://fonts.gstatic.com; " +
             "img-src 'self' data: https:; " +
-            "font-src 'self'; " +
-            "connect-src 'self'; " +
+            "connect-src 'self' http://localhost:* https://localhost:* https://fonts.googleapis.com https://fonts.gstatic.com; " +
             "frame-ancestors 'none'";
 
         // Enforce HTTPS via HSTS (1 year, include subdomains)
