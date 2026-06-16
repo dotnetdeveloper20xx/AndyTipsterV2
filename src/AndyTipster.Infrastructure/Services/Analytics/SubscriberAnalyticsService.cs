@@ -27,10 +27,20 @@ public class SubscriberAnalyticsService : ISubscriberAnalyticsService
             .Distinct()
             .ToListAsync();
 
+        // If user is an admin (no subscription but has admin role), show all categories
+        var isAdmin = await _db.UserRoles
+            .Where(ur => ur.UserId == userId)
+            .Join(_db.Roles, ur => ur.RoleId, r => r.Id, (ur, r) => r.Name)
+            .AnyAsync(name => name == "Super Admin" || name == "Admin");
+
         var query = _db.Tips
             .Include(t => t.Category)
-            .Where(t => (t.Status == TipStatus.Published || t.Status == TipStatus.Archived) && t.Result != null)
-            .Where(t => subscribedCategoryIds.Contains(t.CategoryId));
+            .Where(t => (t.Status == TipStatus.Published || t.Status == TipStatus.Archived) && t.Result != null);
+
+        if (!isAdmin)
+        {
+            query = query.Where(t => subscribedCategoryIds.Contains(t.CategoryId));
+        }
 
         if (filter?.CategoryId.HasValue == true)
             query = query.Where(t => t.CategoryId == filter.CategoryId.Value);

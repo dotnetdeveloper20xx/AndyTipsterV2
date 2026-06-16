@@ -24,6 +24,7 @@ public static class DemoSeeder
         await SeedPlansAsync(dbContext, logger);
         await SeedPlanFeaturesAsync(dbContext, logger);
         var categories = await SeedTipCategoriesAsync(dbContext, logger);
+        await SeedPlanCategoriesAsync(dbContext, categories, logger);
         await SeedTipsAsync(dbContext, adminUser, categories, logger);
         await SeedBlogPostsAsync(dbContext, adminUser, logger);
         await SeedSiteSettingsAsync(dbContext, logger);
@@ -41,6 +42,7 @@ public static class DemoSeeder
         await SeedPromoCodesAsync(dbContext, logger);
         await SeedCmsPagesAsync(dbContext, adminUser, logger);
         await SeedNotificationsAsync(dbContext, adminUser, userManager, logger);
+        await SeedAuditLogsAsync(dbContext, adminUser, logger);
     }
 
     private static async Task<ApplicationUser> SeedUsersAsync(UserManager<ApplicationUser> userManager, ILogger logger)
@@ -525,9 +527,9 @@ public static class DemoSeeder
             Status = SubscriptionStatus.Active,
             Provider = PaymentProvider.PayPal,
             ExternalSubscriptionId = "DEMO-SUB-001",
-            StartDate = DateTime.UtcNow.AddDays(-30),
-            CurrentPeriodEnd = DateTime.UtcNow.AddDays(30),
-            CreatedAt = DateTime.UtcNow.AddDays(-30),
+            StartDate = DateTime.UtcNow.AddDays(-5),
+            CurrentPeriodEnd = DateTime.UtcNow.AddDays(25),
+            CreatedAt = DateTime.UtcNow.AddDays(-5),
         });
 
         await dbContext.SaveChangesAsync();
@@ -554,8 +556,8 @@ public static class DemoSeeder
                 Provider = PaymentProvider.PayPal,
                 ExternalTransactionId = "DEMO-TXN-001",
                 Status = "Completed",
-                PaidAt = DateTime.UtcNow.AddDays(-30),
-                CreatedAt = DateTime.UtcNow.AddDays(-30),
+                PaidAt = DateTime.UtcNow.AddDays(-5),
+                CreatedAt = DateTime.UtcNow.AddDays(-5),
             },
             new Payment
             {
@@ -632,19 +634,16 @@ public static class DemoSeeder
         var blocksJson = """
         [
           {
-            "type": "hero",
-            "heading": "Expert Horse Racing Tips",
-            "subheading": "Join thousands of profitable punters with our daily selections",
-            "ctaText": "View Plans",
-            "ctaLink": "/pricing",
-            "backgroundImage": null
+            "id": "00000000-0000-0000-0000-000000000001",
+            "blockType": "hero",
+            "contentJson": "{\"heading\":\"Expert Horse Racing Tips\",\"subheading\":\"Join thousands of profitable punters with our daily selections\",\"ctaText\":\"View Plans\",\"ctaUrl\":\"/pricing\",\"backgroundImage\":\"\"}",
+            "sortOrder": 0
           },
           {
-            "type": "cta",
-            "heading": "Ready to Start Winning?",
-            "body": "Subscribe today and get instant access to our premium tips backed by data and years of experience.",
-            "buttonText": "Get Started",
-            "buttonLink": "/auth/register"
+            "id": "00000000-0000-0000-0000-000000000002",
+            "blockType": "cta",
+            "contentJson": "{\"heading\":\"Ready to Start Winning?\",\"buttonText\":\"Get Started\",\"buttonUrl\":\"/auth/register\"}",
+            "sortOrder": 1
           }
         ]
         """;
@@ -772,5 +771,106 @@ public static class DemoSeeder
 
         await dbContext.SaveChangesAsync();
         logger.LogInformation("Referral seeded for subscriber.");
+    }
+
+    private static async Task SeedPlanCategoriesAsync(AndyTipsterDbContext dbContext, List<TipCategory> categories, ILogger logger)
+    {
+        var plans = await dbContext.Plans.Include(p => p.IncludedCategories).ToListAsync();
+        if (plans.Any(p => p.IncludedCategories.Count > 0)) return;
+
+        var ukCategory = categories.First(c => c.Name == "UK Horse Racing");
+        var irishCategory = categories.First(c => c.Name == "Irish Horse Racing");
+        var otherCategory = categories.First(c => c.Name == "Other Sports");
+
+        var monthlyPlan = plans.FirstOrDefault(p => p.Name == "Monthly Premium");
+        var quarterlyPlan = plans.FirstOrDefault(p => p.Name == "Quarterly Value");
+        var annualPlan = plans.FirstOrDefault(p => p.Name == "Annual Gold");
+
+        // Monthly: UK racing only
+        if (monthlyPlan is not null)
+        {
+            monthlyPlan.IncludedCategories.Add(ukCategory);
+        }
+
+        // Quarterly: UK + Irish racing
+        if (quarterlyPlan is not null)
+        {
+            quarterlyPlan.IncludedCategories.Add(ukCategory);
+            quarterlyPlan.IncludedCategories.Add(irishCategory);
+        }
+
+        // Annual: All categories
+        if (annualPlan is not null)
+        {
+            annualPlan.IncludedCategories.Add(ukCategory);
+            annualPlan.IncludedCategories.Add(irishCategory);
+            annualPlan.IncludedCategories.Add(otherCategory);
+        }
+
+        await dbContext.SaveChangesAsync();
+        logger.LogInformation("Plan-category relationships seeded successfully.");
+    }
+
+    private static async Task SeedAuditLogsAsync(AndyTipsterDbContext dbContext, ApplicationUser adminUser, ILogger logger)
+    {
+        if (await dbContext.AuditLogs.AnyAsync()) return;
+
+        var auditLogs = new[]
+        {
+            new AuditLog
+            {
+                ActorUserId = adminUser.Id,
+                ActionType = "Login",
+                TargetEntity = "User",
+                TargetEntityId = adminUser.Id.ToString(),
+                Timestamp = DateTime.UtcNow.AddDays(-2),
+                IpAddress = "127.0.0.1",
+            },
+            new AuditLog
+            {
+                ActorUserId = adminUser.Id,
+                ActionType = "RoleAssigned",
+                TargetEntity = "User",
+                TargetEntityId = null,
+                BeforeJson = null,
+                AfterJson = "{\"role\":\"Subscriber\",\"user\":\"subscriber@test.com\"}",
+                Timestamp = DateTime.UtcNow.AddDays(-1),
+                IpAddress = "127.0.0.1",
+            },
+            new AuditLog
+            {
+                ActorUserId = adminUser.Id,
+                ActionType = "RoleCreated",
+                TargetEntity = "Role",
+                TargetEntityId = null,
+                AfterJson = "{\"name\":\"Moderator\"}",
+                Timestamp = DateTime.UtcNow.AddDays(-1).AddHours(2),
+                IpAddress = "127.0.0.1",
+            },
+            new AuditLog
+            {
+                ActorUserId = adminUser.Id,
+                ActionType = "Login",
+                TargetEntity = "User",
+                TargetEntityId = adminUser.Id.ToString(),
+                Timestamp = DateTime.UtcNow.AddHours(-3),
+                IpAddress = "192.168.1.100",
+            },
+            new AuditLog
+            {
+                ActorUserId = adminUser.Id,
+                ActionType = "BulkRoleChange",
+                TargetEntity = "User",
+                TargetEntityId = null,
+                BeforeJson = "{\"users\":[\"free@test.com\"],\"oldRole\":\"Free User\"}",
+                AfterJson = "{\"users\":[\"free@test.com\"],\"newRole\":\"Subscriber\"}",
+                Timestamp = DateTime.UtcNow.AddHours(-1),
+                IpAddress = "127.0.0.1",
+            },
+        };
+
+        dbContext.AuditLogs.AddRange(auditLogs);
+        await dbContext.SaveChangesAsync();
+        logger.LogInformation("Audit log entries seeded successfully ({Count} entries).", auditLogs.Length);
     }
 }

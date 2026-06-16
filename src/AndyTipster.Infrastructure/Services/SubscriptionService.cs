@@ -184,7 +184,7 @@ public class SubscriptionService : ISubscriptionService
         // Revenue trend (last 12 months)
         var startDate = DateTime.UtcNow.AddMonths(-12);
         var payments = await _db.Payments
-            .Where(p => p.PaidAt >= startDate && p.Status == "completed" || p.Status == "succeeded")
+            .Where(p => p.PaidAt >= startDate && (p.Status == "Completed" || p.Status == "completed" || p.Status == "succeeded"))
             .ToListAsync(ct);
 
         var revenueTrend = payments
