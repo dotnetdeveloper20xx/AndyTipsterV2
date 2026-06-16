@@ -3,60 +3,56 @@
 @plugin "daisyui";
 
 /*
- * AndyTipster V2 Design System
- * ─────────────────────────────
- * Based on the brand design spec:
- * - Primary: Deep Navy (#1E3A5A)
- * - Primary Dark: (#0F104D) 
- * - Accent: Vivid Blue (#2563EB)
- * - Success: Green (#19A34A)
- * - Warning: Amber (#F1B608)
- * - Error: Red (#EF4444)
- * - Background: Light Gray (#F6F6FC)
- * - Typography: Poppins
- *
- * WCAG AA Contrast Ratios — All 4.5:1+ verified
+ * AndyTipster V2 Design System — Cricket Green
+ * ─────────────────────────────────────────────
+ * Primary: Rich Cricket Green (#0B5E1C)
+ * Secondary: Dark Forest Green (#064E28)
+ * Accent: Mint Green (#23C55E)
+ * Warning: Gold/Amber (#F1BF24)
+ * Background: Soft Grey (#F4F6F5) — NOT pure white
+ * Typography: Poppins
+ * Layout: Left sidebar + top bar (professional SaaS)
  */
 
-/* ===== Light Theme — AndyTipster Brand ===== */
+/* ===== Light Theme — Cricket Green ===== */
 @plugin "daisyui/theme" {
   name: "andytipster-light";
   default: true;
   color-scheme: light;
 
   /* Base surfaces */
-  --color-base-100: oklch(98.5% 0.003 260);    /* #F6F6FC — light gray bg */
-  --color-base-200: oklch(100% 0 0);           /* #FFFFFF — card bg */
-  --color-base-300: oklch(92% 0.008 260);      /* #E2E4EA — borders */
-  --color-base-content: oklch(22% 0.03 265);   /* #1A1D2E — dark text */
+  --color-base-100: oklch(96.8% 0.005 155);    /* #F4F6F5 — soft grey page bg */
+  --color-base-200: oklch(100% 0 0);           /* #FFFFFF — white cards */
+  --color-base-300: oklch(92.5% 0.008 155);    /* #E8EBE9 — borders */
+  --color-base-content: oklch(22% 0.025 230);  /* #192938 — dark slate text */
 
-  /* Primary: Deep Navy */
-  --color-primary: oklch(28% 0.06 255);        /* #1E3A5A */
-  --color-primary-content: oklch(98% 0 0);     /* White text on navy */
+  /* Primary: Rich Cricket Green */
+  --color-primary: oklch(35% 0.12 150);        /* #0B5E1C */
+  --color-primary-content: oklch(98% 0 0);     /* White text */
 
-  /* Secondary: Darker navy / sidebar color */
-  --color-secondary: oklch(18% 0.05 270);      /* #0F104D */
-  --color-secondary-content: oklch(95% 0 0);   /* Light text */
+  /* Secondary: Dark Forest Green */
+  --color-secondary: oklch(30% 0.10 155);      /* #064E28 */
+  --color-secondary-content: oklch(98% 0 0);   /* White text */
 
-  /* Accent: Vivid Blue */
-  --color-accent: oklch(55% 0.22 260);         /* #2563EB */
-  --color-accent-content: oklch(98% 0 0);      /* White on blue */
+  /* Accent: Mint Green */
+  --color-accent: oklch(68% 0.19 150);         /* #23C55E */
+  --color-accent-content: oklch(98% 0 0);      /* White text */
 
-  /* Neutral: Slate */
-  --color-neutral: oklch(30% 0.03 255);        /* #334165 */
-  --color-neutral-content: oklch(95% 0 0);     /* Light on slate */
+  /* Neutral: Dark Slate */
+  --color-neutral: oklch(22% 0.025 230);       /* #192938 */
+  --color-neutral-content: oklch(96.8% 0.005 155); /* Soft grey */
 
   /* Semantic colors */
-  --color-info: oklch(55% 0.22 260);           /* Same as accent blue */
+  --color-info: oklch(52% 0.20 260);           /* #2563EB — blue */
   --color-info-content: oklch(98% 0 0);
 
-  --color-success: oklch(55% 0.18 155);        /* #19A34A */
+  --color-success: oklch(68% 0.19 150);        /* #23C55E — green */
   --color-success-content: oklch(98% 0 0);
 
-  --color-warning: oklch(78% 0.18 85);         /* #F1B608 */
+  --color-warning: oklch(80% 0.16 85);         /* #F1BF24 — amber/gold */
   --color-warning-content: oklch(20% 0.04 85);
 
-  --color-error: oklch(58% 0.22 25);           /* #EF4444 */
+  --color-error: oklch(58% 0.22 25);           /* #EF4444 — red */
   --color-error-content: oklch(98% 0 0);
 
   /* Rounded corners — clean, professional */
@@ -72,42 +68,42 @@
   --noise: 0;
 }
 
-/* ===== Dark Theme — AndyTipster Brand (Dark Mode) ===== */
+/* ===== Dark Theme — Cricket Green (Dark Mode) ===== */
 @plugin "daisyui/theme" {
   name: "andytipster-dark";
   prefersdark: true;
   color-scheme: dark;
 
-  /* Base surfaces — deep navy tones */
-  --color-base-100: oklch(15% 0.04 265);       /* #0A1028 — deepest bg */
-  --color-base-200: oklch(20% 0.05 260);       /* #1A2340 — card bg */
-  --color-base-300: oklch(25% 0.04 255);       /* #2A3350 — borders/elevated */
-  --color-base-content: oklch(92% 0.01 260);   /* #E8EAF0 — light text */
+  /* Base surfaces — very dark green tones */
+  --color-base-100: oklch(15% 0.04 155);       /* #0C1F14 — very dark green bg */
+  --color-base-200: oklch(19% 0.05 155);       /* #132B1C — dark green card */
+  --color-base-300: oklch(24% 0.05 155);       /* #1A3824 — borders */
+  --color-base-content: oklch(92% 0.01 155);   /* #E8F0EC — light green-tinted text */
 
-  /* Primary: Lighter navy for contrast in dark mode */
-  --color-primary: oklch(60% 0.14 255);        /* Lighter navy-blue */
-  --color-primary-content: oklch(98% 0 0);
+  /* Primary: Brighter green for dark mode */
+  --color-primary: oklch(68% 0.19 150);        /* #23C55E */
+  --color-primary-content: oklch(15% 0.04 155);
 
-  /* Secondary: Medium navy */
-  --color-secondary: oklch(35% 0.06 265);
+  /* Secondary: Rich green */
+  --color-secondary: oklch(35% 0.12 150);      /* #0B5E1C */
   --color-secondary-content: oklch(92% 0 0);
 
-  /* Accent: Vivid Blue (slightly brighter for dark) */
-  --color-accent: oklch(62% 0.22 260);         /* Brighter blue */
-  --color-accent-content: oklch(98% 0 0);
+  /* Accent: Lighter mint */
+  --color-accent: oklch(75% 0.18 150);         /* #4ADE80 */
+  --color-accent-content: oklch(15% 0.04 155);
 
   /* Neutral: Dark slate */
-  --color-neutral: oklch(22% 0.03 260);
+  --color-neutral: oklch(18% 0.03 155);
   --color-neutral-content: oklch(92% 0 0);
 
   /* Semantic colors (slightly brighter for dark bg) */
-  --color-info: oklch(62% 0.20 260);
+  --color-info: oklch(58% 0.20 260);
   --color-info-content: oklch(98% 0 0);
 
-  --color-success: oklch(62% 0.18 155);
+  --color-success: oklch(72% 0.18 150);
   --color-success-content: oklch(98% 0 0);
 
-  --color-warning: oklch(80% 0.18 85);
+  --color-warning: oklch(82% 0.16 85);
   --color-warning-content: oklch(15% 0.04 85);
 
   --color-error: oklch(62% 0.22 25);
@@ -153,13 +149,13 @@
 }
 
 .skeleton-shimmer {
-  background: linear-gradient(90deg, oklch(0.92 0.005 260 / 0.4) 25%, oklch(0.96 0.003 260 / 0.6) 50%, oklch(0.92 0.005 260 / 0.4) 75%);
+  background: linear-gradient(90deg, oklch(0.92 0.005 155 / 0.4) 25%, oklch(0.96 0.003 155 / 0.6) 50%, oklch(0.92 0.005 155 / 0.4) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
 
 [data-theme="andytipster-dark"] .skeleton-shimmer {
-  background: linear-gradient(90deg, oklch(0.2 0.04 265 / 0.4) 25%, oklch(0.28 0.04 260 / 0.6) 50%, oklch(0.2 0.04 265 / 0.4) 75%);
+  background: linear-gradient(90deg, oklch(0.19 0.04 155 / 0.4) 25%, oklch(0.24 0.04 155 / 0.6) 50%, oklch(0.19 0.04 155 / 0.4) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
@@ -171,13 +167,13 @@
 
 /* ===== Accessibility: Keyboard Focus Indicators ===== */
 :focus-visible {
-  outline: 2px solid oklch(55% 0.22 260);
+  outline: 2px solid oklch(68% 0.19 150);
   outline-offset: 2px;
   border-radius: 2px;
 }
 
 [data-theme="andytipster-dark"] :focus-visible {
-  outline-color: oklch(62% 0.22 260);
+  outline-color: oklch(75% 0.18 150);
 }
 
 /* Skip-to-content link */
@@ -188,7 +184,7 @@
   transform: translateX(-50%);
   z-index: 9999;
   padding: 0.75rem 1.5rem;
-  background: oklch(28% 0.06 255);
+  background: oklch(35% 0.12 150);
   color: oklch(98% 0 0);
   font-weight: 600;
   border-radius: 0 0 0.5rem 0.5rem;
@@ -200,23 +196,65 @@
   top: 0;
 }
 
-/* ===== Brand-specific utilities ===== */
-
-/* Sidebar navigation style (deep navy bg) */
-.sidebar-nav {
-  background: oklch(15% 0.04 265);
-  color: oklch(80% 0.01 260);
+/* ===== Sidebar Navigation ===== */
+.sidebar-gradient {
+  background: linear-gradient(180deg, #064E28 0%, #043D22 100%);
 }
 
-.sidebar-nav .active {
-  background: oklch(55% 0.22 260);
-  color: white;
+.sidebar-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 1rem;
   border-radius: 0.5rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.875rem;
+  font-weight: 400;
+  transition: all var(--transition-micro) ease;
+  cursor: pointer;
 }
+
+.sidebar-nav-item:hover {
+  color: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.sidebar-nav-item.active {
+  color: #FFFFFF;
+  background: #23C55E;
+  font-weight: 500;
+}
+
+.sidebar-nav-item .nav-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+}
+
+/* ===== Subtle Animations ===== */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fade-in var(--transition-standard) ease;
+}
+
+.animate-slide-up {
+  animation: slide-up var(--transition-standard) ease;
+}
+
+/* ===== Brand-specific utilities ===== */
 
 /* Stat cards with gold accent for profit */
 .stat-profit {
-  color: oklch(55% 0.18 155);
+  color: oklch(68% 0.19 150);
 }
 
 .stat-loss {
@@ -224,33 +262,80 @@
 }
 
 /* Badge variants matching the design */
+.badge-active {
+  background: #23C55E;
+  color: white;
+}
+
+.badge-expiring {
+  background: #F1BF24;
+  color: #192938;
+}
+
+.badge-expired {
+  background: #9CA3AF;
+  color: white;
+}
+
 .badge-vip {
-  background: oklch(55% 0.22 260);
+  background: oklch(35% 0.12 150);
   color: white;
 }
 
 .badge-trial {
-  background: oklch(78% 0.18 85);
+  background: oklch(80% 0.16 85);
   color: oklch(20% 0.04 85);
 }
 
 .badge-popular {
-  background: oklch(55% 0.18 155);
+  background: oklch(68% 0.19 150);
   color: white;
 }
 
 /* Gold/amber accent for profit numbers */
 .text-profit {
-  color: oklch(55% 0.18 155);
+  color: oklch(68% 0.19 150);
 }
 
 .text-loss {
   color: oklch(58% 0.22 25);
 }
 
-/* Card hover effect matching design */
+/* Card hover effect */
 .card-hover:hover {
-  box-shadow: 0 8px 25px oklch(28% 0.06 255 / 0.15);
+  box-shadow: 0 8px 25px oklch(35% 0.12 150 / 0.12);
   transform: translateY(-2px);
   transition: all var(--transition-standard) ease;
+}
+
+/* ===== Table styling for first-class data tables ===== */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table th {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: oklch(50% 0.02 230);
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid oklch(92.5% 0.008 155);
+  text-align: left;
+}
+
+.data-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid oklch(96% 0.005 155);
+  font-size: 0.875rem;
+}
+
+[data-theme="andytipster-dark"] .data-table th {
+  color: oklch(70% 0.01 155);
+  border-bottom-color: oklch(24% 0.05 155);
+}
+
+[data-theme="andytipster-dark"] .data-table td {
+  border-bottom-color: oklch(20% 0.04 155);
 }
