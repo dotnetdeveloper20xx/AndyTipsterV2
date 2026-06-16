@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { UserService } from '../../../../core/services/user.service';
 
 type ProfileTab = 'profile' | 'security' | 'notifications' | 'billing' | 'privacy' | 'appearance';
@@ -16,7 +17,7 @@ interface ActivityEntry {
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <section class="p-6 max-w-4xl mx-auto space-y-6">
@@ -371,11 +372,7 @@ export class ProfileComponent implements OnInit {
     this.activityLoading.set(true);
     this.activityPage.set(page);
 
-    // Activity is fetched from profile/activity endpoint
-    const http = (this.userService as any).http;
-    const apiUrl = (this.userService as any).apiUrl?.replace('/users', '/profile') || '/api/profile';
-
-    http.get(`${apiUrl}/activity`, { params: { page } }).subscribe({
+    this.userService.getActivity(page).subscribe({
       next: (res: any) => {
         this.activityEntries.set(res.entries || []);
         this.activityTotalPages.set(res.totalPages || 1);

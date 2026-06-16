@@ -34,6 +34,14 @@ import { CmsService, NavigationMenuDto, MenuItemDto } from '../../../../core/ser
       }
 
       <!-- Menu tabs -->
+      @if (loading()) {
+        <div class="flex justify-center py-8"><span class="loading loading-spinner loading-lg"></span></div>
+      } @else if (menus().length === 0 && !showCreateMenu) {
+        <div class="text-center py-12">
+          <p class="text-lg text-base-content/60 mb-2">No menus created yet</p>
+          <p class="text-sm text-base-content/40">Click "+ New Menu" to create your first navigation menu.</p>
+        </div>
+      } @else {
       <div role="tablist" class="tabs tabs-bordered mb-4">
         @for (menu of menus(); track menu.id) {
           <button
@@ -115,6 +123,7 @@ import { CmsService, NavigationMenuDto, MenuItemDto } from '../../../../core/ser
           </div>
         }
       }
+      }
     </div>
 
     <!-- Recursive menu item template -->
@@ -148,6 +157,7 @@ export class NavigationEditorComponent implements OnInit {
   menus = signal<NavigationMenuDto[]>([]);
   selectedMenu = signal<NavigationMenuDto | null>(null);
   editingItem = signal<MenuItemDto | null>(null);
+  loading = signal(false);
 
   showCreateMenu = false;
   newMenuName = '';
@@ -158,11 +168,16 @@ export class NavigationEditorComponent implements OnInit {
   }
 
   loadMenus(): void {
-    this.cmsService.getMenus().subscribe(menus => {
-      this.menus.set(menus);
-      if (menus.length > 0 && !this.selectedMenu()) {
-        this.selectMenu(menus[0]);
-      }
+    this.loading.set(true);
+    this.cmsService.getMenus().subscribe({
+      next: (menus) => {
+        this.menus.set(menus);
+        if (menus.length > 0 && !this.selectedMenu()) {
+          this.selectMenu(menus[0]);
+        }
+        this.loading.set(false);
+      },
+      error: () => this.loading.set(false),
     });
   }
 
@@ -173,10 +188,13 @@ export class NavigationEditorComponent implements OnInit {
 
   createMenu(): void {
     if (!this.newMenuName) return;
-    this.cmsService.createMenu({ name: this.newMenuName, location: this.newMenuLocation }).subscribe(() => {
-      this.showCreateMenu = false;
-      this.newMenuName = '';
-      this.loadMenus();
+    this.cmsService.createMenu({ name: this.newMenuName, location: this.newMenuLocation }).subscribe({
+      next: () => {
+        this.showCreateMenu = false;
+        this.newMenuName = '';
+        this.loadMenus();
+      },
+      error: (err) => { alert(err.error?.detail || 'Failed to create menu.'); },
     });
   }
 

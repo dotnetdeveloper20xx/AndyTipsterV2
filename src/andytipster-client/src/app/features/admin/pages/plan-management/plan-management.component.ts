@@ -27,6 +27,19 @@ import { CurrencyDisplayPipe } from '../../../../shared/pipes/currency-display.p
       </div>
 
       <!-- Plans List -->
+      @if (loading()) {
+        <div class="flex justify-center py-8"><span class="loading loading-spinner loading-lg"></span></div>
+      } @else if (error()) {
+        <div class="alert alert-error mb-4">
+          <span>{{ error() }}</span>
+          <button class="btn btn-sm btn-ghost" (click)="loadPlans()">Retry</button>
+        </div>
+      } @else if (plans().length === 0) {
+        <div class="text-center py-12 mb-8">
+          <p class="text-lg text-base-content/60 mb-2">No plans created yet</p>
+          <p class="text-sm text-base-content/40">Click "+ New Plan" to create your first subscription plan.</p>
+        </div>
+      } @else {
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
         @for (plan of plans(); track plan.id) {
           <div class="card bg-base-100 shadow-xl" [class.opacity-50]="plan.isArchived">
@@ -53,6 +66,7 @@ import { CurrencyDisplayPipe } from '../../../../shared/pipes/currency-display.p
           </div>
         }
       </div>
+      }
 
       <!-- Promo Codes Section -->
       <h2 class="text-2xl font-bold mb-4">Promo Codes</h2>
@@ -178,6 +192,8 @@ export class PlanManagementComponent implements OnInit {
 
   plans = signal<Plan[]>([]);
   promoCodes = signal<PromoCode[]>([]);
+  loading = signal(false);
+  error = signal<string | null>(null);
   showCreatePlan = signal(false);
   showCreatePromo = signal(false);
 
@@ -190,18 +206,26 @@ export class PlanManagementComponent implements OnInit {
     this.loadPromoCodes();
   }
 
-  private loadPlans() {
-    this.plansService.getPlans().subscribe({ next: (plans) => this.plans.set(plans) });
+  loadPlans() {
+    this.loading.set(true);
+    this.plansService.getPlans().subscribe({
+      next: (plans) => { this.plans.set(plans); this.loading.set(false); },
+      error: () => { this.error.set('Failed to load plans.'); this.loading.set(false); },
+    });
   }
 
   private loadPromoCodes() {
-    this.plansService.getPromoCodes().subscribe({ next: (codes) => this.promoCodes.set(codes) });
+    this.plansService.getPromoCodes().subscribe({
+      next: (codes) => this.promoCodes.set(codes),
+      error: () => {},
+    });
   }
 
   createPlan() {
     const features = this.featuresText.split('\n').map(f => f.trim()).filter(f => f.length > 0);
     this.plansService.createPlan({ ...this.newPlan, features } as Partial<Plan>).subscribe({
       next: () => { this.showCreatePlan.set(false); this.loadPlans(); },
+      error: (err) => { alert(err.error?.detail || 'Failed to create plan.'); },
     });
   }
 
@@ -230,6 +254,7 @@ export class PlanManagementComponent implements OnInit {
     };
     this.plansService.createPromoCode(dto).subscribe({
       next: () => { this.showCreatePromo.set(false); this.loadPromoCodes(); },
+      error: (err) => { alert(err.error?.detail || 'Failed to create promo code.'); },
     });
   }
 

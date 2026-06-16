@@ -17,6 +17,9 @@ import { SubscriptionService, RevenueAnalytics, TransactionListResult, PaymentHi
 
       <h1 class="text-3xl font-bold mb-6">PayPal Dashboard</h1>
 
+      @if (loading()) {
+        <div class="flex justify-center py-8"><span class="loading loading-spinner loading-lg"></span></div>
+      } @else {
       <!-- Revenue Analytics Cards -->
       @if (analytics()) {
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -110,6 +113,7 @@ import { SubscriptionService, RevenueAnalytics, TransactionListResult, PaymentHi
           }
         </div>
       </div>
+      }
     </section>
   `,
 })
@@ -119,6 +123,7 @@ export class PayPalDashboardComponent implements OnInit {
   analytics = signal<RevenueAnalytics | null>(null);
   transactions = signal<TransactionListResult | null>(null);
   revenueByPlanEntries = signal<{ key: string; value: number }[]>([]);
+  loading = signal(true);
 
   searchTerm = '';
   startDate = '';
@@ -133,7 +138,9 @@ export class PayPalDashboardComponent implements OnInit {
         this.revenueByPlanEntries.set(
           Object.entries(data.revenueByPlan).map(([key, value]) => ({ key, value }))
         );
+        this.loading.set(false);
       },
+      error: () => this.loading.set(false),
     });
     this.loadTransactions();
   }
@@ -148,6 +155,7 @@ export class PayPalDashboardComponent implements OnInit {
       pageSize: 25,
     }).subscribe({
       next: (result) => this.transactions.set(result),
+      error: () => {},
     });
   }
 
@@ -155,6 +163,7 @@ export class PayPalDashboardComponent implements OnInit {
     if (confirm(`Refund transaction ${tx.id}?`)) {
       this.subscriptionService.processRefund(tx.id).subscribe({
         next: () => this.loadTransactions(),
+        error: (err) => { alert(err.error?.errorMessage || 'Refund failed.'); },
       });
     }
   }

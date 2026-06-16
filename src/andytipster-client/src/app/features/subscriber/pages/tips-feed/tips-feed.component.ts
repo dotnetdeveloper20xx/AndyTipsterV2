@@ -61,12 +61,14 @@ import { TipsService, TipDto, CategoryDto, TipFilterDto } from '../../../../core
       </div>
 
       <!-- Tips List -->
-      @if (tips().length === 0 && !loading()) {
+      @if (loading()) {
+        <div class="flex justify-center py-8"><span class="loading loading-spinner loading-lg"></span></div>
+      } @else if (tips().length === 0) {
         <div class="text-center py-12">
           <p class="text-lg opacity-60">No tips available for your subscription.</p>
           <a routerLink="/dashboard/billing" class="btn btn-primary btn-sm mt-4">Upgrade Plan</a>
         </div>
-      }
+      } @else {
 
       <div class="grid gap-4">
         @for (tip of tips(); track tip.id) {
@@ -103,6 +105,7 @@ import { TipsService, TipDto, CategoryDto, TipFilterDto } from '../../../../core
           </div>
         }
       </div>
+      }
 
       <!-- Pagination -->
       @if (totalCount() > 0) {

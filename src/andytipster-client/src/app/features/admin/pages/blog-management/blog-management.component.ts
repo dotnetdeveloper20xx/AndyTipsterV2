@@ -26,6 +26,14 @@ import { BlogService, BlogPostListItemDto, CreateBlogPostDto } from '../../../..
       </div>
 
       <!-- Posts Table -->
+      @if (loading()) {
+        <div class="flex justify-center py-8"><span class="loading loading-spinner loading-lg"></span></div>
+      } @else if (posts().length === 0) {
+        <div class="text-center py-12">
+          <p class="text-lg text-base-content/60 mb-2">No blog posts yet</p>
+          <p class="text-sm text-base-content/40">Click "New Post" to create your first blog post.</p>
+        </div>
+      } @else {
       <div class="overflow-x-auto">
         <table class="table table-zebra w-full">
           <thead>
@@ -66,6 +74,7 @@ import { BlogService, BlogPostListItemDto, CreateBlogPostDto } from '../../../..
           </tbody>
         </table>
       </div>
+      }
 
       <!-- Create Modal -->
       @if (showCreateForm) {
@@ -109,6 +118,7 @@ export class BlogManagementComponent implements OnInit {
 
   posts = signal<BlogPostListItemDto[]>([]);
   totalCount = signal(0);
+  loading = signal(false);
   formError = signal<string | null>(null);
 
   statusFilter = '';
@@ -120,10 +130,15 @@ export class BlogManagementComponent implements OnInit {
   }
 
   loadPosts(): void {
+    this.loading.set(true);
     this.blogService.getPosts(this.statusFilter || undefined).subscribe({
       next: (res) => {
         this.posts.set(res.items);
         this.totalCount.set(res.totalCount);
+        this.loading.set(false);
+      },
+      error: () => {
+        this.loading.set(false);
       }
     });
   }

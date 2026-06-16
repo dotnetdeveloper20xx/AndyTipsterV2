@@ -129,6 +129,14 @@ interface EditorState {
                 <h2 class="text-xl font-bold">Pages</h2>
                 <button class="btn btn-primary btn-sm" (click)="createNewPage()">+ New Page</button>
               </div>
+              @if (pagesLoading()) {
+                <div class="flex justify-center py-8"><span class="loading loading-spinner loading-lg"></span></div>
+              } @else if (pages().length === 0) {
+                <div class="text-center py-12">
+                  <p class="text-lg text-base-content/60 mb-2">No pages yet</p>
+                  <p class="text-sm text-base-content/40">Click "+ New Page" to create your first page.</p>
+                </div>
+              } @else {
               @for (page of pages(); track page.id) {
                 <div class="card bg-base-100 shadow-sm mb-2 cursor-pointer hover:shadow-md transition-shadow" (click)="openPage(page)">
                   <div class="card-body py-3 px-4 flex-row items-center justify-between">
@@ -141,6 +149,7 @@ interface EditorState {
                     </span>
                   </div>
                 </div>
+              }
               }
             </div>
           }
@@ -189,6 +198,7 @@ export class CmsComponent implements OnInit, OnDestroy {
   });
 
   pages = signal<PageDto[]>([]);
+  pagesLoading = signal(false);
 
   blockTypes = [
     { type: 'hero', label: 'Hero Section', icon: '🎯' },
@@ -241,7 +251,11 @@ export class CmsComponent implements OnInit, OnDestroy {
   }
 
   loadPages(): void {
-    this.cmsService.getPages().subscribe(pages => this.pages.set(pages));
+    this.pagesLoading.set(true);
+    this.cmsService.getPages().subscribe({
+      next: (pages) => { this.pages.set(pages); this.pagesLoading.set(false); },
+      error: () => this.pagesLoading.set(false),
+    });
   }
 
   openPage(page: PageDto): void {

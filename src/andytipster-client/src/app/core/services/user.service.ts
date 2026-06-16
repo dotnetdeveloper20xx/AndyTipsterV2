@@ -22,4 +22,10 @@ export class UserService {
     formData.append('avatar', file);
     return this.http.post<{ avatarUrl: string }>(`${this.apiUrl}/me/avatar`, formData);
   }
+
+  getActivity(page: number = 1): Observable<{ entries: any[]; totalPages: number }> {
+    return this.http.get<{ entries: any[]; totalPages: number }>(`${this.apiUrl}/me/activity`, {
+      params: { page: page.toString() },
+    });
+  }
 }
