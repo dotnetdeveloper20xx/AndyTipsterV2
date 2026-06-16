@@ -329,3 +329,35 @@ The platform's technical foundation is excellent. The gap isn't features — it'
 4. **Growing sustainably** (email nurture, referrals, SEO, social proof)
 
 The goal: **Make every subscriber feel like cancelling would cost them money.**
+
+---
+
+## Important Constraints
+
+**No external API dependencies** beyond PayPal and Stripe for payments.
+
+This means:
+- ❌ No Racing API / Racing Post integration
+- ❌ No automated result tracking from external sources
+- ❌ No AI image generation (DALL-E)
+- ❌ No Unsplash/Pexels stock photo API
+- ❌ No deep-link bet slip to bookmakers
+
+Instead:
+- ✅ All racing data entered manually by admin (fast "Quick Tip" mode)
+- ✅ Results marked manually by admin (simple Won/Lost/Void/Push buttons)
+- ✅ Images uploaded manually via Media Library
+- ✅ Platform works independently — no downtime from third-party failures
+- ✅ Keep it simple, reliable, and fully self-contained
+
+This approach means the platform is:
+- **100% under our control** — no API rate limits, no external failures
+- **Faster** — no waiting for third-party API calls
+- **Cheaper** — no API subscription costs
+- **Simpler** — less code to maintain
+
+The only external services we use:
+1. PayPal (subscription billing)
+2. Stripe (card payments)
+3. SendGrid (email delivery — or we can use Azure Communication Services)
+4. Our own Azure infrastructure (hosting, storage, database)
