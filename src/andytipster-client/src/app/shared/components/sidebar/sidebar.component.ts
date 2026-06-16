@@ -1,10 +1,11 @@
-import { ChangeDetectionStrategy, Component, inject, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input, output, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { selectIsAuthenticated } from '../../../store/auth/auth.selectors';
 import { selectUserRoleNames } from '../../../store/roles/roles.selectors';
 import { AuthActions } from '../../../store/auth/auth.actions';
+import { TipsService } from '../../../core/services/tips.service';
 
 export interface SidebarNavItem {
   label: string;
@@ -62,6 +63,9 @@ export interface SidebarNavItem {
                       (click)="closeMobile.emit()"
                     >
                       <span>{{ child.label }}</span>
+                      @if (child.label === 'Today' && todayTipCount() > 0) {
+                        <span class="ml-2 inline-flex items-center justify-center w-5 h-5 text-xs font-bold rounded-full bg-amber-400 text-neutral">{{ todayTipCount() }}</span>
+                      }
                     </a>
                   }
                 </div>
@@ -157,6 +161,9 @@ export interface SidebarNavItem {
                           (click)="closeMobile.emit()"
                         >
                           <span>{{ child.label }}</span>
+                          @if (child.label === 'Today' && todayTipCount() > 0) {
+                            <span class="ml-2 inline-flex items-center justify-center w-5 h-5 text-xs font-bold rounded-full bg-amber-400 text-neutral">{{ todayTipCount() }}</span>
+                          }
                         </a>
                       }
                     </div>
@@ -208,12 +215,15 @@ export interface SidebarNavItem {
     }
   `],
 })
-export class SidebarComponent {
+export class SidebarComponent implements OnInit {
   private readonly store = inject(Store);
   private readonly router = inject(Router);
+  private readonly tipsService = inject(TipsService);
 
   readonly mobileOpen = input<boolean>(false);
   readonly closeMobile = output<void>();
+
+  readonly todayTipCount = signal<number>(0);
 
   private roles: string[] = [];
   private expandedMenus = new Set<string>();
@@ -222,7 +232,7 @@ export class SidebarComponent {
     { label: 'Dashboard', route: '/admin/dashboard', icon: 'dashboard' },
     {
       label: 'Tips', icon: 'tips', children: [
-        { label: "Today's Tips", route: '/admin/tips', icon: '' },
+        { label: 'Today', route: '/admin/tips', icon: '' },
         { label: 'Results', route: '/subscriber/results', icon: '' },
       ]
     },
@@ -249,7 +259,7 @@ export class SidebarComponent {
     { label: 'Dashboard', route: '/subscriber/tips', icon: 'dashboard' },
     {
       label: 'Tips', icon: 'tips', children: [
-        { label: "Today's Tips", route: '/subscriber/tips', icon: '' },
+        { label: 'Today', route: '/subscriber/tips', icon: '' },
         { label: 'Results', route: '/subscriber/results', icon: '' },
       ]
     },
@@ -268,6 +278,15 @@ export class SidebarComponent {
   constructor() {
     this.store.select(selectUserRoleNames).subscribe((roles) => {
       this.roles = roles;
+    });
+  }
+
+  ngOnInit(): void {
+    // Load today's tip count for badge display
+    const today = new Date().toISOString().split('T')[0];
+    this.tipsService.getTipsFeed({ startDate: today, endDate: today, page: 1, pageSize: 50 }).subscribe({
+      next: (res) => this.todayTipCount.set(res.totalCount),
+      error: () => {} // Silently handle
     });
   }
 

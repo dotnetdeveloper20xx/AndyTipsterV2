@@ -42,6 +42,67 @@ import { CurrencyDisplayPipe } from '../../../../shared/pipes/currency-display.p
         </div>
       </div>
 
+      <!-- Quick Add Tip Panel -->
+      <div class="card bg-base-200 shadow-sm">
+        <div class="card-body py-4">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-semibold text-sm">Quick Add Tip</h3>
+            <button class="btn btn-ghost btn-xs" (click)="quickTipExpanded = !quickTipExpanded">
+              {{ quickTipExpanded ? '▾ Collapse' : '▸ Expand' }}
+            </button>
+          </div>
+          @if (quickTipExpanded) {
+            <div class="grid grid-cols-2 md:grid-cols-6 gap-3 items-end">
+              <input
+                type="text"
+                placeholder="Race (e.g. 3:15 Cheltenham)"
+                class="input input-sm input-bordered col-span-2"
+                [(ngModel)]="quickTip.raceName"
+                maxlength="200"
+              />
+              <input
+                type="text"
+                placeholder="Selection"
+                class="input input-sm input-bordered"
+                [(ngModel)]="quickTip.selection"
+                maxlength="200"
+              />
+              <input
+                type="number"
+                placeholder="Odds"
+                class="input input-sm input-bordered"
+                [(ngModel)]="quickTip.odds"
+                min="1.01"
+                max="1000"
+                step="0.01"
+              />
+              <select class="select select-sm select-bordered" [(ngModel)]="quickTip.categoryId">
+                @for (cat of categories(); track cat.id) {
+                  <option [value]="cat.id">{{ cat.name }}</option>
+                }
+              </select>
+              <button
+                class="btn btn-sm btn-primary"
+                [disabled]="quickPublishing()"
+                (click)="quickPublish()"
+              >
+                {{ quickPublishing() ? 'Publishing...' : 'Publish Now' }}
+              </button>
+            </div>
+            @if (quickTipError()) {
+              <div class="alert alert-error alert-sm mt-2 py-1">
+                <span class="text-sm">{{ quickTipError() }}</span>
+              </div>
+            }
+            @if (quickTipSuccess()) {
+              <div class="alert alert-success alert-sm mt-2 py-1">
+                <span class="text-sm">✓ Tip published successfully!</span>
+              </div>
+            }
+          }
+        </div>
+      </div>
+
       <!-- P&L Summary -->
       @if (pnlSummary()) {
         <div class="stats shadow w-full">
@@ -185,6 +246,20 @@ export class TipManagementComponent implements OnInit {
   formError = signal<string | null>(null);
   importResult = signal<BulkImportResultDto | null>(null);
 
+  // Quick Tip state
+  quickTipExpanded = true;
+  quickPublishing = signal(false);
+  quickTipError = signal<string | null>(null);
+  quickTipSuccess = signal(false);
+  quickTip: CreateTipDto = {
+    eventDate: new Date().toISOString().split('T')[0],
+    raceName: '',
+    selection: '',
+    odds: 0,
+    stake: 1,
+    categoryId: '',
+  };
+
   filter: TipFilterDto = { page: 1, pageSize: 25, status: '', categoryId: '', result: '' };
   showCreateForm = false;
   showResultModal = false;
@@ -284,6 +359,10 @@ export class TipManagementComponent implements OnInit {
     this.tipsService.getCategories(true).subscribe({
       next: (cats) => {
         this.categories.set(cats);
+        // Set default quick tip category
+        if (cats.length > 0 && !this.quickTip.categoryId) {
+          this.quickTip.categoryId = cats[0].id;
+        }
         // Update category column filter options
         const catColumn = this.columns.find(c => c.field === 'categoryName');
         if (catColumn) {
@@ -299,6 +378,53 @@ export class TipManagementComponent implements OnInit {
     });
   }
 
+  // Quick Publish: creates and immediately publishes a tip
+  quickPublish(): void {
+    this.quickTipError.set(null);
+    this.quickTipSuccess.set(false);
+
+    if (!this.quickTip.raceName || !this.quickTip.selection || !this.quickTip.odds) {
+      this.quickTipError.set('Please fill in Race, Selection, and Odds.');
+      return;
+    }
+
+    this.quickPublishing.set(true);
+
+    // Create the tip first
+    this.tipsService.createTip(this.quickTip).subscribe({
+      next: (createdTip) => {
+        // Then immediately publish it
+        this.tipsService.publishTip(createdTip.id).subscribe({
+          next: () => {
+            this.quickPublishing.set(false);
+            this.quickTipSuccess.set(true);
+            // Reset form
+            this.quickTip = {
+              eventDate: new Date().toISOString().split('T')[0],
+              raceName: '',
+              selection: '',
+              odds: 0,
+              stake: 1,
+              categoryId: this.categories()[0]?.id ?? '',
+            };
+            this.loadTips();
+            // Clear success message after 3s
+            setTimeout(() => this.quickTipSuccess.set(false), 3000);
+          },
+          error: (err) => {
+            this.quickPublishing.set(false);
+            this.quickTipError.set(err.error?.detail || 'Failed to publish tip.');
+          },
+        });
+      },
+      error: (err) => {
+        this.quickPublishing.set(false);
+        const detail = err.error?.detail || err.error?.message || 'Validation failed.';
+        this.quickTipError.set(detail);
+      },
+    });
+  }
+
   // DataTable event handlers
   onPageChange(event: PageChangeEvent): void {
     this.filter.page = event.page;
@@ -307,7 +433,6 @@ export class TipManagementComponent implements OnInit {
   }
 
   onSortChange(sorts: SortState[]): void {
-    // Backend sorts handled via filter - extend if API supports sortBy param
     this.loadTips();
   }
 
@@ -325,7 +450,6 @@ export class TipManagementComponent implements OnInit {
   }
 
   onSearch(term: string): void {
-    // Search is handled via filters if API supports it
     this.filter.page = 1;
     this.loadTips();
   }
